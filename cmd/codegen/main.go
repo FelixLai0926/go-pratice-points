@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"./pkg/module/config/env"
+
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gen"
@@ -11,14 +13,9 @@ import (
 )
 
 func main() {
-	envFile := ".env.example"
-	if len(os.Args) > 1 {
-		envFile = os.Args[1]
-	} else if envEnv := os.Getenv("ENV_FILE"); envEnv != "" {
-		envFile = envEnv
-	}
+	envFilePath := env.GetEnvPath()
 
-	if err := godotenv.Load(envFile); err != nil {
+	if err := godotenv.Load(envFilePath); err != nil {
 		panic("Error loading .env file: " + err.Error())
 	}
 
@@ -36,7 +33,7 @@ func main() {
 	}
 
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./pkg/model",
+		OutPath: os.Getenv("GEN_MODEL_OUT_PATH"),
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 
