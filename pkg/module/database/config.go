@@ -1,6 +1,6 @@
 package database
 
-type postgresConfig struct {
+type PostgresConfig struct {
 	User     string `env:"POSTGRES_USER" required:"true"`
 	Password string `env:"POSTGRES_PASSWORD" required:"true"`
 	Host     string `env:"POSTGRES_HOST" required:"true"`

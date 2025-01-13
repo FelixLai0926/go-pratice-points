@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
-
-	"./pkg/module/config/env"
+	"points/pkg/module/config"
+	"points/pkg/module/database"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -13,20 +12,18 @@ import (
 )
 
 func main() {
-	envFilePath := env.GetEnvPath()
-
-	if err := godotenv.Load(envFilePath); err != nil {
+	envFilePath := config.GetEnvPath()
+	if err := config.InitEnv(envFilePath); err != nil {
 		panic("Error loading .env file: " + err.Error())
 	}
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_DB"))
+	cfg, err := config.ParseEnv[database.PostgresConfig]()
+	if err := godotenv.Load(envFilePath); err != nil {
+		panic("Error transforming .env file to struct: " + err.Error())
+	}
 
-	fmt.Print(dsn)
+	dsn := database.GeneratePostgresDSN(cfg)
+
 	gormdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database: " + err.Error())

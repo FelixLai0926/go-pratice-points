@@ -9,19 +9,28 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func getEnvPath() string {
-	envFilePath := "./configs/.env.example"
-	if len(os.Args) > 1 {
-		envFilePath = os.Args[1]
+func GetEnvPath(environment ...string) string {
+	env := "example"
+	if len(environment) > 0 && environment[0] != "" {
+		env = environment[0]
 	}
+
+	envFilePath := fmt.Sprintf("./configs/.env.%s", env)
+	if _, err := os.Stat(envFilePath); os.IsNotExist(err) {
+		return "./configs/.env.example"
+	}
+
 	return envFilePath
 }
 
-func LoadEnv[TResponse any](envFile string) (*TResponse, error) {
-	if err := godotenv.Load(envFile); err != nil {
-		return nil, fmt.Errorf("failed to load .env file: %v", err)
+func InitEnv(envFilePath string) error {
+	if err := godotenv.Load(envFilePath); err != nil {
+		return fmt.Errorf("failed to load .env file: %v", err)
 	}
+	return nil
+}
 
+func ParseEnv[TResponse any]() (*TResponse, error) {
 	var cfg TResponse
 
 	val := reflect.ValueOf(&cfg).Elem()
