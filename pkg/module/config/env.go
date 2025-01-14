@@ -14,11 +14,9 @@ func GetEnvPath(environment ...string) string {
 	if len(environment) > 0 && environment[0] != "" {
 		env = environment[0]
 	}
+	fmt.Println(env)
 
 	envFilePath := fmt.Sprintf("./configs/.env.%s", env)
-	if _, err := os.Stat(envFilePath); os.IsNotExist(err) {
-		return "./configs/.env.example"
-	}
 
 	return envFilePath
 }
@@ -46,6 +44,10 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 		}
 
 		envValue := os.Getenv(envKey)
+
+		if field.Tag.Get("default") != "" && envValue == "" {
+			envValue = field.Tag.Get("default")
+		}
 
 		if field.Tag.Get("required") == "true" && envValue == "" {
 			return nil, fmt.Errorf("missing required environment variable: %s", envKey)

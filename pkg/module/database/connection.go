@@ -12,35 +12,38 @@ import (
 
 var Instance *gorm.DB
 
-func init() {
+func InitDatabase() error {
 	envFilePath := config.GetEnvPath()
 
 	if err := config.InitEnv(envFilePath); err != nil {
-		panic("Error loading .env file: " + err.Error())
+		return fmt.Errorf("error loading .env file: %v", err)
 	}
 
 	cfg, err := config.ParseEnv[PostgresConfig]()
 	if err != nil {
-		panic("Error transforming .env file to struct: " + err.Error())
+		return fmt.Errorf("error transforming .env file to struct: %v", err)
 	}
 
 	dsn := GeneratePostgresDSN(cfg)
 
-	Instance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	sqlDB, err := Instance.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("Failed to get database connection: %v", err)
+		return fmt.Errorf("failed to get database connection: %v", err)
 	}
 
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetConnMaxLifetime(30 * time.Minute)
+	sqlDB.SetMaxOpenConns(cfg.MaxOpenConn)
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn)
+	sqlDB.SetConnMaxLifetime(time.Duration(cfg.ConnMaxLife) * time.Minute)
 
 	log.Println("Database connection pool configured successfully!")
+
+	Instance = db
+	return nil
 }
 
 func GeneratePostgresDSN(cfg *PostgresConfig) string {
