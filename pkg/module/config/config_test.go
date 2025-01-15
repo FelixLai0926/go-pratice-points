@@ -1,9 +1,62 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
+
+func TestGetRootPath(t *testing.T) {
+	type args struct {
+		environment []string
+	}
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "GetRootPath",
+			wantErr: false,
+		},
+		{
+			name:    "GetRootPath (error)",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantErr {
+				tmpDir, err := os.MkdirTemp("", "test")
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer os.RemoveAll(tmpDir)
+
+				originalWd, err := os.Getwd()
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer os.Chdir(originalWd)
+
+				if err := os.Chdir(tmpDir); err != nil {
+					t.Fatal(err)
+				}
+				_, err = getRootPath()
+				if err == nil {
+					t.Error("getRootPath() expected error, got nil")
+				}
+				return
+			}
+			rootPath, err := getRootPath()
+			if err == nil && tt.wantErr {
+				t.Errorf("getRootPath() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if rootPath == "" {
+				t.Errorf("getRootPath() = %v, want not empty", rootPath)
+			}
+		})
+	}
+}
 
 func TestGetEnvPath(t *testing.T) {
 	type args struct {

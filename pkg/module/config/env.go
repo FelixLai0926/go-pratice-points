@@ -3,11 +3,28 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 
 	"github.com/joho/godotenv"
 )
+
+func getRootPath() (string, error) {
+	_, callerFile, _, _ := runtime.Caller(0)
+	dir := filepath.Dir(callerFile)
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("go.mod not found, can't locate project root")
+		}
+		dir = parent
+	}
+}
 
 func GetEnvPath(environment ...string) string {
 	env := "example"
@@ -16,7 +33,7 @@ func GetEnvPath(environment ...string) string {
 	}
 	fmt.Println(env)
 
-	envFilePath := fmt.Sprintf("./configs/.env.%s", env)
+	envFilePath := fmt.Sprintf("configs/.env.%s", env)
 
 	return envFilePath
 }

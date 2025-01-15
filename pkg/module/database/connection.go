@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"points/pkg/module/config"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -12,18 +11,7 @@ import (
 
 var Instance *gorm.DB
 
-func InitDatabase() error {
-	envFilePath := config.GetEnvPath()
-
-	if err := config.InitEnv(envFilePath); err != nil {
-		return fmt.Errorf("error loading .env file: %v", err)
-	}
-
-	cfg, err := config.ParseEnv[PostgresConfig]()
-	if err != nil {
-		return fmt.Errorf("error transforming .env file to struct: %v", err)
-	}
-
+func InitDatabase(cfg *PostgresConfig) error {
 	dsn := GeneratePostgresDSN(cfg)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

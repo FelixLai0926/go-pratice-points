@@ -3,32 +3,21 @@ package config
 import (
 	"fmt"
 	"os"
+	"points/pkg/module/database"
 	"reflect"
 	"testing"
 )
 
 func TestParseEnv(t *testing.T) {
-	type PostgresConfig struct {
-		User        string `env:"POSTGRES_USER" required:"true"`
-		Password    string `env:"POSTGRES_PASSWORD" required:"true"`
-		Host        string `env:"POSTGRES_HOST" required:"true"`
-		Port        string `env:"POSTGRES_PORT" required:"true"`
-		Database    string `env:"POSTGRES_DB" required:"true"`
-		SSLMode     string `env:"POSTGRES_SSLMODE" required:"false"`
-		MaxOpenConn int    `env:"POSTGRES_MAX_OPEN_CONNS" required:"false" default:"100"`
-		MaxIdleConn int    `env:"POSTGRES_MAX_IDLE_CONNS" required:"false" default:"10"`
-		ConnMaxLife int    `env:"POSTGRES_CONN_MAX_LIFE" required:"false" default:"30"`
-	}
-
 	tests := []struct {
 		name    string
-		want    *PostgresConfig
+		want    *database.PostgresConfig
 		wantErr bool
 		osEnv   map[string]string
 	}{
 		{
 			name: "Test ParseEnv",
-			want: &PostgresConfig{
+			want: &database.PostgresConfig{
 				User:        "postgres",
 				Password:    "pgadmin1234",
 				Host:        "127.0.0.1",
@@ -54,7 +43,7 @@ func TestParseEnv(t *testing.T) {
 		},
 		{
 			name: "Test ParseEnv (default values)",
-			want: &PostgresConfig{
+			want: &database.PostgresConfig{
 				User:        "postgres",
 				Password:    "pgadmin1234",
 				Host:        "127.0.0.1",
@@ -88,7 +77,7 @@ func TestParseEnv(t *testing.T) {
 				os.Setenv(key, value)
 				defer os.Unsetenv(key)
 			}
-			got, err := ParseEnv[PostgresConfig]()
+			got, err := ParseEnv[database.PostgresConfig]()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseEnv() error = %v, wantErr %v", err, tt.wantErr)
 				return
