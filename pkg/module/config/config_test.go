@@ -7,127 +7,92 @@ import (
 )
 
 func TestGetRootPath(t *testing.T) {
-	type args struct {
-		environment []string
-	}
 	tests := []struct {
 		name    string
 		wantErr bool
 	}{
-		{
-			name:    "GetRootPath",
-			wantErr: false,
-		},
-		{
-			name:    "GetRootPath (error)",
-			wantErr: true,
-		},
+		{"Valid root path", false},
+		{"Missing go.mod", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				tmpDir, err := os.MkdirTemp("", "test")
-				if err != nil {
-					t.Fatal(err)
-				}
+				tmpDir, _ := os.MkdirTemp("", "test")
 				defer os.RemoveAll(tmpDir)
 
-				originalWd, err := os.Getwd()
-				if err != nil {
-					t.Fatal(err)
-				}
+				originalWd, _ := os.Getwd()
 				defer os.Chdir(originalWd)
 
-				if err := os.Chdir(tmpDir); err != nil {
-					t.Fatal(err)
-				}
-				_, err = getRootPath()
-				if err == nil {
-					t.Error("getRootPath() expected error, got nil")
-				}
-				return
+				os.Chdir(tmpDir)
 			}
-			rootPath, err := getRootPath()
-			if err == nil && tt.wantErr {
-				t.Errorf("getRootPath() error = %v, wantErr %v", err, tt.wantErr)
+
+			rootPath, err := GetRootPath()
+			if (err == nil && tt.wantErr) || (err != nil && !tt.wantErr) {
+				t.Fatalf("GetRootPath() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if rootPath == "" {
-				t.Errorf("getRootPath() = %v, want not empty", rootPath)
+			if rootPath == "" && !tt.wantErr {
+				t.Fatalf("GetRootPath() returned empty path")
 			}
 		})
 	}
 }
 
 func TestGetEnvPath(t *testing.T) {
-	type args struct {
-		environment []string
-	}
 	tests := []struct {
 		name string
-		args args
+		args []string
 		want string
 	}{
-		{
-			name: "Production environment",
-			args: args{environment: []string{"production"}},
-			want: ".env.production",
-		},
-		{
-			name: "Staging environment",
-			args: args{environment: []string{"staging"}},
-			want: ".env.staging",
-		},
-		{
-			name: "Development environment (default)",
-			args: args{environment: []string{}},
-			want: ".env.example",
-		},
-		{
-			name: "Multiple environments (use first)",
-			args: args{environment: []string{"production", "staging"}},
-			want: ".env.production",
-		},
-		{
-			name: "Unknown environment",
-			args: args{environment: []string{"unknown"}},
-			want: ".env.unknown",
-		},
+		{"Valid production environment", []string{"production"}, ".env.production"},
+		{"Valid staging environment", []string{"staging"}, ".env.staging"},
+		{"Default environment", []string{}, ".env.example"},
+		{"Fallback to first environment", []string{"production", "staging"}, ".env.production"},
+		{"Unknown environment", []string{"unknown"}, ".env.unknown"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetEnvPath(tt.args.environment...)
-			spiltResult := strings.Split(result, "/")
-			fileName := spiltResult[len(spiltResult)-1]
-			if fileName != tt.want {
-				t.Errorf("GetEnvPath() = %v, want %v", fileName, tt.want)
+			result, _ := GetEnvPath(tt.args...)
+			if !strings.HasSuffix(result, tt.want) {
+				t.Errorf("GetEnvPath() = %v, want %v", result, tt.want)
 			}
 		})
 	}
 }
 
 func TestInitEnv(t *testing.T) {
-	type args struct {
-		envFilePath string
-	}
 	tests := []struct {
 		name    string
-		args    args
+		envFile string
 		wantErr bool
 	}{
-		{
-			name:    "Test InitEnv",
-			args:    args{envFilePath: "../../../configs/.env.example"},
-			wantErr: false,
-		},
-		{
-			name:    "Test InitEnv (unknown environment)",
-			args:    args{envFilePath: "../../../configs/.env.unknown"},
-			wantErr: true,
-		},
+		{"Valid .env file", "POSTGRES_USER=postgres\nPOSTGRES_PASSWORD=secret\n", false},
+		{"Missing .env file", "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := InitEnv(tt.args.envFilePath); (err != nil) != tt.wantErr {
+			var tmpFile *os.File
+			var err error
+
+			if tt.envFile != "" {
+				tmpFile, err = os.CreateTemp("", "env.unittest")
+				if err != nil {
+					t.Fatalf("faild to create temp file: %v", err)
+				}
+				defer os.Remove(tmpFile.Name())
+
+				if _, err := tmpFile.WriteString(tt.envFile); err != nil {
+					t.Fatalf("faild to write to temp file: %v", err)
+				}
+				tmpFile.Close()
+			}
+
+			envFilePath := ""
+			if tmpFile != nil {
+				envFilePath = tmpFile.Name()
+			}
+
+			err = InitEnv(envFilePath)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("InitEnv() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -35,6 +35,10 @@ func InitDatabase(cfg *PostgresConfig) error {
 }
 
 func GeneratePostgresDSN(cfg *PostgresConfig) string {
+	if cfg == nil {
+		return ""
+	}
+
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.SSLMode)
 }

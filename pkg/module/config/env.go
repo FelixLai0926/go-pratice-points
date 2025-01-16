@@ -5,15 +5,17 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-func getRootPath() (string, error) {
-	_, callerFile, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(callerFile)
+func GetRootPath() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
 	for {
 		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
 			return dir, nil
@@ -26,16 +28,19 @@ func getRootPath() (string, error) {
 	}
 }
 
-func GetEnvPath(environment ...string) string {
+func GetEnvPath(environment ...string) (string, error) {
 	env := "example"
 	if len(environment) > 0 && environment[0] != "" {
 		env = environment[0]
 	}
-	fmt.Println(env)
 
-	envFilePath := fmt.Sprintf("configs/.env.%s", env)
+	rootPath, err := GetRootPath()
+	if err != nil {
+		return "", fmt.Errorf("failed to get root path %v", err)
+	}
+	envFilePath := filepath.Join(rootPath, "configs", fmt.Sprintf(".env.%s", env))
 
-	return envFilePath
+	return envFilePath, nil
 }
 
 func InitEnv(envFilePath string) error {

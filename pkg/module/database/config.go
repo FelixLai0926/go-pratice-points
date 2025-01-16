@@ -6,7 +6,7 @@ type PostgresConfig struct {
 	Host        string `env:"POSTGRES_HOST" required:"true"`
 	Port        string `env:"POSTGRES_PORT" required:"true"`
 	Database    string `env:"POSTGRES_DB" required:"true"`
-	SSLMode     string `env:"POSTGRES_SSLMODE" required:"false"`
+	SSLMode     string `env:"POSTGRES_SSLMODE" required:"false" default:"disable"`
 	MaxOpenConn int    `env:"POSTGRES_MAX_OPEN_CONNS" required:"false" default:"100"`
 	MaxIdleConn int    `env:"POSTGRES_MAX_IDLE_CONNS" required:"false" default:"10"`
 	ConnMaxLife int    `env:"POSTGRES_CONN_MAX_LIFE" required:"false" default:"30"`

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"points/pkg/module/database"
 	"reflect"
@@ -16,7 +15,7 @@ func TestParseEnv(t *testing.T) {
 		osEnv   map[string]string
 	}{
 		{
-			name: "Test ParseEnv",
+			name: "Complete environment variables",
 			want: &database.PostgresConfig{
 				User:        "postgres",
 				Password:    "pgadmin1234",
@@ -42,7 +41,7 @@ func TestParseEnv(t *testing.T) {
 			},
 		},
 		{
-			name: "Test ParseEnv (default values)",
+			name: "Missing optional variables (use default values)",
 			want: &database.PostgresConfig{
 				User:        "postgres",
 				Password:    "pgadmin1234",
@@ -65,7 +64,7 @@ func TestParseEnv(t *testing.T) {
 			},
 		},
 		{
-			name:    "Test ParseEnv (empty environment)",
+			name:    "Empty environment variables (return error)",
 			want:    nil,
 			wantErr: true,
 			osEnv:   map[string]string{},
@@ -82,7 +81,7 @@ func TestParseEnv(t *testing.T) {
 				t.Errorf("ParseEnv() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			fmt.Println(got)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseEnv() = %v, want %v", got, tt.want)
 			}

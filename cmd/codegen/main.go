@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"points/pkg/module/config"
 	"points/pkg/module/database"
@@ -11,42 +13,71 @@ import (
 )
 
 func main() {
-	cfg := initConfig()
+	cfg, err := loadDatabaseConfig()
+	if err != nil {
+		log.Fatalf("Error initializing config: %v", err)
+	}
 
-	gormdb := initDB(cfg)
+	gormdb, err := setupDatabaseConnection(cfg)
+	if err != nil {
+		log.Fatalf("Error initializing database:: %v", err)
+	}
 
-	g := gen.NewGenerator(gen.Config{
-		OutPath: os.Getenv("GEN_MODEL_OUT_PATH"),
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
-	})
+	sqlDB, err := gormdb.DB()
+	if err != nil {
+		log.Fatalf("Error getting sqlDB: %v", err)
+	}
+	defer sqlDB.Close()
 
-	g.UseDB(gormdb)
-
-	g.ApplyBasic(g.GenerateAllTable()...)
-
-	g.Execute()
+	log.Println("Generating models...")
+	if err := generateModels(gormdb); err != nil {
+		log.Fatalf("Error generating models: %v", err)
+	}
+	log.Println("Model generation completed.")
 }
 
-func initConfig() *database.PostgresConfig {
-	envFilePath := config.GetEnvPath()
+func loadDatabaseConfig() (*database.PostgresConfig, error) {
+	envFilePath, err := config.GetEnvPath()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting .env file path: %v", err)
+	}
 	if err := config.InitEnv(envFilePath); err != nil {
-		panic("Error loading .env file: " + err.Error())
+		return nil, fmt.Errorf("Error loading .env file: %v", err)
 	}
 
 	cfg, err := config.ParseEnv[database.PostgresConfig]()
 	if err != nil {
-		panic("Error transforming .env file to struct: " + err.Error())
+		return nil, fmt.Errorf("Error transforming .env file to struct: %v", err)
 	}
-	return cfg
+	return cfg, nil
 }
 
-func initDB(cfg *database.PostgresConfig) *gorm.DB {
+func setupDatabaseConnection(cfg *database.PostgresConfig) (*gorm.DB, error) {
 	dsn := database.GeneratePostgresDSN(cfg)
 
 	gormdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database: " + err.Error())
+		return nil, fmt.Errorf("failed to connect database: %v", err)
 	}
 
-	return gormdb
+	return gormdb, nil
+}
+
+func generateModels(gormdb *gorm.DB) error {
+	outPutPath := os.Getenv("GEN_MODEL_OUT_PATH")
+	if outPutPath == "" {
+		return fmt.Errorf("GEN_MODEL_OUT_PATH is not set")
+	}
+	generator := gen.NewGenerator(gen.Config{
+		OutPath: os.Getenv("GEN_MODEL_OUT_PATH"),
+		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+
+	generator.UseDB(gormdb)
+
+	generator.ApplyBasic(generator.GenerateAllTable()...)
+
+	generator.Execute()
+
+	return nil
 }
