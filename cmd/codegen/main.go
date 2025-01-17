@@ -7,7 +7,6 @@ import (
 	"points/pkg/module/config"
 	"points/pkg/module/database"
 
-	"gorm.io/driver/postgres"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 )
@@ -18,16 +17,8 @@ func main() {
 		log.Fatalf("Error initializing config: %v", err)
 	}
 
-	gormdb, err := setupDatabaseConnection(cfg)
-	if err != nil {
-		log.Fatalf("Error initializing database:: %v", err)
-	}
-
-	sqlDB, err := gormdb.DB()
-	if err != nil {
-		log.Fatalf("Error getting sqlDB: %v", err)
-	}
-	defer sqlDB.Close()
+	gormdb, err := database.InitDatabase(cfg)
+	defer database.Close(gormdb)
 
 	log.Println("Generating models...")
 	if err := generateModels(gormdb); err != nil {
@@ -50,17 +41,6 @@ func loadDatabaseConfig() (*database.PostgresConfig, error) {
 		return nil, fmt.Errorf("Error transforming .env file to struct: %v", err)
 	}
 	return cfg, nil
-}
-
-func setupDatabaseConnection(cfg *database.PostgresConfig) (*gorm.DB, error) {
-	dsn := database.GeneratePostgresDSN(cfg)
-
-	gormdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect database: %v", err)
-	}
-
-	return gormdb, nil
 }
 
 func generateModels(gormdb *gorm.DB) error {

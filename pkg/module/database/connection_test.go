@@ -42,7 +42,7 @@ func TestInitDatabase(t *testing.T) {
 				return
 			}
 
-			err = InitDatabase(cfg)
+			_, err = InitDatabase(cfg)
 			checkError(t, err, tt.wantErr, "error initializing database", true)
 		})
 	}
@@ -53,9 +53,10 @@ func TestGeneratePostgresDSN(t *testing.T) {
 		cfg *PostgresConfig
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr bool
 	}{
 		{
 			name: "Valid DSN with SSLMode empty",
@@ -68,10 +69,10 @@ func TestGeneratePostgresDSN(t *testing.T) {
 					Database: "points",
 				},
 			},
-			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=",
+			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=disable",
 		},
 		{
-			name: "Valid DSN with SSLMode disable",
+			name: "Valid DSN with SSLMode enable",
 			args: args{
 				cfg: &PostgresConfig{
 					Host:     "localhost",
@@ -79,22 +80,24 @@ func TestGeneratePostgresDSN(t *testing.T) {
 					User:     "postgres",
 					Password: "postgres",
 					Database: "points",
-					SSLMode:  "disable",
+					SSLMode:  "enable",
 				},
 			},
-			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=disable",
+			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=enable",
 		},
 		{
 			name: "Nil config",
 			args: args{
 				cfg: nil,
 			},
-			want: "",
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GeneratePostgresDSN(tt.args.cfg); got != tt.want {
+			got, err := GeneratePostgresDSN(tt.args.cfg)
+			checkError(t, err, tt.wantErr, "error generating DSN", false)
+			if got != tt.want {
 				t.Errorf("GeneratePostgresDSN() = %v, want %v", got, tt.want)
 			}
 		})

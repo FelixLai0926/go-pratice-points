@@ -36,17 +36,19 @@ func GetEnvPath(environment ...string) (string, error) {
 
 	rootPath, err := GetRootPath()
 	if err != nil {
-		return "", fmt.Errorf("failed to get root path %v", err)
+		return "", fmt.Errorf("failed to get root path while generating env path: %v", err)
 	}
+
 	envFilePath := filepath.Join(rootPath, "configs", fmt.Sprintf(".env.%s", env))
 
 	return envFilePath, nil
 }
 
-func InitEnv(envFilePath string) error {
-	if err := godotenv.Load(envFilePath); err != nil {
-		return fmt.Errorf("failed to load .env file: %v", err)
+func InitEnv(envFilePaths ...string) error {
+	if err := godotenv.Overload(envFilePaths...); err != nil {
+		return fmt.Errorf("failed to load .env file(s): %v, file(s): %v", err, envFilePaths)
 	}
+
 	return nil
 }
 
@@ -54,6 +56,10 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 	var cfg TResponse
 
 	val := reflect.ValueOf(&cfg).Elem()
+	if val.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("ParseEnv expects a struct type, got: %s", val.Kind())
+	}
+
 	typ := val.Type()
 
 	for i := 0; i < typ.NumField(); i++ {
@@ -65,18 +71,9 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 			continue
 		}
 
-		envValue := os.Getenv(envKey)
-
-		if field.Tag.Get("default") != "" && envValue == "" {
-			envValue = field.Tag.Get("default")
-		}
-
+		envValue := getEnvOrDefault(envKey, field.Tag.Get("default"))
 		if field.Tag.Get("required") == "true" && envValue == "" {
 			return nil, fmt.Errorf("missing required environment variable: %s", envKey)
-		}
-
-		if envValue == "" {
-			continue
 		}
 
 		if err := setFieldValue(fieldValue, envValue); err != nil {
@@ -118,4 +115,12 @@ func setFieldValue(field reflect.Value, value string) error {
 	}
 
 	return nil
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
