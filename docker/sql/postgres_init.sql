@@ -1,0 +1,6 @@
+CREATE TABLE public.balance (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    balance NUMERIC(18, 2) NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
