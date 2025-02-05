@@ -48,8 +48,9 @@ func generateModels(gormdb *gorm.DB) error {
 	if outPutPath == "" {
 		return fmt.Errorf("GEN_MODEL_OUT_PATH is not set")
 	}
+
 	generator := gen.NewGenerator(gen.Config{
-		OutPath: os.Getenv("GEN_MODEL_OUT_PATH"),
+		OutPath: outPutPath,
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 

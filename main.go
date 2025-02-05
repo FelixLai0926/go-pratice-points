@@ -8,6 +8,8 @@ import (
 	"points/pkg/module/database"
 	"points/pkg/module/logger"
 	"points/pkg/router"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -17,7 +19,6 @@ func main() {
 	}
 	defer logger.SyncLogger()
 
-	server := router.Setup()
 	envFilePath, err := config.GetEnvPath(env)
 	if err != nil {
 		log.Fatalf("Error getting .env file path: %v", err)
@@ -42,7 +43,10 @@ func main() {
 	}
 	defer sqlDB.Close()
 
+	server := gin.Default()
 	server.Use(middleware.DatabaseMiddleware(gormdb))
 	server.Use(middleware.LoggerMiddleware())
+	router.RegisterTestRoutes(server)
+	router.RegisterUserRoutes(server)
 	server.Run(os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT"))
 }
