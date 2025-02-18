@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"points/api/trade/mock"
 	"points/errors"
+	"points/pkg/middleware"
 	"points/pkg/models/enum/errcode"
 	"strings"
 	"testing"
@@ -72,6 +73,7 @@ func TestConfirmHandler(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			router := gin.New()
+			router.Use(middleware.ErrorHandlerMiddleware())
 			dummySvc := &mock.DummyTradeService{
 				ManualConfirmErr: tc.manualConfirmErr,
 			}

@@ -61,6 +61,7 @@ func main() {
 	server := gin.Default()
 	server.Use(middleware.DatabaseMiddleware(gormdb))
 	server.Use(middleware.LoggerMiddleware())
+	server.Use(middleware.ErrorHandlerMiddleware())
 	router.RegisterTestRoutes(server)
 	router.RegisterUserRoutes(server, gormdb, redisClient)
 	server.Run(os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT"))

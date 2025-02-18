@@ -24,16 +24,16 @@ func NewTCCValidator(db *gorm.DB, repo repository.TradeRepository) service.Trade
 func (s *TCCValidator) ValidateTransferRequest(rq *trade.TransferRequest) error {
 	fromAccount, err := s.repo.GetAccount(s.db, rq.From)
 	if err != nil {
-		return errors.Wrap(errcode.ErrNotFound, "source account not found", err)
+		return errors.Wrap(errcode.ErrNotFound, "validate - source account not found", err)
 	}
 
 	if fromAccount.AvailableBalance < rq.Amount {
-		return errors.Wrap(errcode.ErrInsufficientBalance, "insufficient balance", nil)
+		return errors.Wrap(errcode.ErrInsufficientBalance, "validate - insufficient balance", nil)
 	}
 
 	existingTrans, err := s.repo.GetTransaction(s.db, rq.Nonce, rq.From, nil)
 	if err == nil && existingTrans != nil {
-		return errors.Wrap(errcode.ErrConflict, "nonce already used", err)
+		return errors.Wrap(errcode.ErrConflict, "validate - nonce already used", err)
 	}
 
 	return nil
@@ -58,23 +58,23 @@ func (s *TCCValidator) ValidateCancelRequest(rq *trade.CancelRequest) error {
 func (s *TCCValidator) validateAccountAndTransaction(from int32, nonce int64) error {
 	fromAccount, err := s.repo.GetAccount(s.db, from)
 	if err != nil {
-		return errors.Wrap(errcode.ErrNotFound, "source account not found", err)
+		return errors.Wrap(errcode.ErrNotFound, "validate - source account not found", err)
 	}
 
 	pendingStatus := tcc.Pending
 	pendingTransaction, err := s.repo.GetTransaction(s.db, nonce, from, &pendingStatus)
 	if err != nil {
 		if stdErrors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.Wrap(errcode.ErrGetTransaction, "transaction not found", err)
+			return errors.Wrap(errcode.ErrGetTransaction, "validate - transaction not found", err)
 		}
-		return errors.Wrap(errcode.ErrGetTransaction, "error retrieving transaction", err)
+		return errors.Wrap(errcode.ErrGetTransaction, "validate - error retrieving transaction", err)
 	}
 	if pendingTransaction == nil {
-		return errors.Wrap(errcode.ErrGetTransaction, "transaction not found", nil)
+		return errors.Wrap(errcode.ErrGetTransaction, "validate - transaction not found", nil)
 	}
 
 	if fromAccount.ReservedBalance < pendingTransaction.Amount {
-		return errors.Wrap(errcode.ErrInsufficientBalance, "insufficient balance", nil)
+		return errors.Wrap(errcode.ErrInsufficientBalance, "validate - insufficient balance", nil)
 	}
 
 	return nil

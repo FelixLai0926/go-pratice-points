@@ -2,9 +2,9 @@ package trade
 
 import (
 	"net/http"
+	"points/errors"
 	"points/pkg/models/enum/errcode"
 	"points/pkg/models/trade"
-	"points/pkg/module/httputil"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,8 +40,7 @@ func (h *TransferHandler) Transfer(c *gin.Context) {
 	}
 
 	if err := h.Validator.ValidateTransferRequest(transferRequest); err != nil {
-		status, resp := httputil.FormatError(err, "validate failed", http.StatusBadRequest)
-		c.JSON(status, resp)
+		c.Error(errors.NewAppError(http.StatusBadRequest, err))
 		return
 	}
 
@@ -51,14 +50,12 @@ func (h *TransferHandler) Transfer(c *gin.Context) {
 	}
 
 	if err := h.Service.EnsureDestinationAccount(EnsureAccountRequest); err != nil {
-		status, resp := httputil.FormatError(err, "ensure destination account failed", http.StatusInternalServerError)
-		c.JSON(status, resp)
+		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
 		return
 	}
 
 	if err := h.Service.Transfer(transferRequest); err != nil {
-		status, resp := httputil.FormatError(err, "transfer failed", http.StatusInternalServerError)
-		c.JSON(status, resp)
+		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
 		return
 	}
 

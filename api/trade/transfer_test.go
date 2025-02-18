@@ -10,6 +10,7 @@ import (
 
 	"points/api/trade/mock"
 	"points/errors"
+	"points/pkg/middleware"
 	"points/pkg/models/enum/errcode"
 
 	"github.com/gin-gonic/gin"
@@ -93,6 +94,7 @@ func TestTransferHandler(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			router := gin.New()
+			router.Use(middleware.ErrorHandlerMiddleware())
 			dummyService := &mock.DummyTradeService{
 				TransferErr: tc.transferErr,
 			}

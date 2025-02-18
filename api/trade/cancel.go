@@ -2,9 +2,9 @@ package trade
 
 import (
 	"net/http"
+	"points/errors"
 	"points/pkg/models/enum/errcode"
 	"points/pkg/models/trade"
-	"points/pkg/module/httputil"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,14 +31,12 @@ func (h *TransferHandler) Cancel(c *gin.Context) {
 	}
 
 	if err := h.Validator.ValidateCancelRequest(transferRequest); err != nil {
-		status, resp := httputil.FormatError(err, "validate failed", http.StatusBadRequest)
-		c.JSON(status, resp)
+		c.Error(errors.NewAppError(http.StatusBadRequest, err))
 		return
 	}
 
 	if err := h.Service.Cancel(transferRequest); err != nil {
-		status, resp := httputil.FormatError(err, "cancel failed", http.StatusInternalServerError)
-		c.JSON(status, resp)
+		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
 		return
 	}
 
