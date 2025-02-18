@@ -71,7 +71,7 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 			continue
 		}
 
-		envValue := getEnvOrDefault(envKey, field.Tag.Get("default"))
+		envValue, _ := GetEnvOrDefault(envKey, field.Tag.Get("default"), toString)
 		if field.Tag.Get("required") == "true" && envValue == "" {
 			return nil, fmt.Errorf("missing required environment variable: %s", envKey)
 		}
@@ -117,10 +117,20 @@ func setFieldValue(field reflect.Value, value string) error {
 	return nil
 }
 
-func getEnvOrDefault(key, defaultValue string) string {
+func GetEnvOrDefault[T any](key string, defaultValue T, parser func(string) (T, error)) (T, error) {
 	value := os.Getenv(key)
 	if value == "" {
-		return defaultValue
+		return defaultValue, nil
 	}
-	return value
+
+	v, err := parser(value)
+	if err != nil {
+		return defaultValue, err
+	}
+
+	return v, nil
+}
+
+func toString(value string) (string, error) {
+	return value, nil
 }

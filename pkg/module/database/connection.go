@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func InitDatabase(cfg *PostgresConfig) (*gorm.DB, error) {
@@ -14,7 +15,9 @@ func InitDatabase(cfg *PostgresConfig) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to generate DSN: %v", err)
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}

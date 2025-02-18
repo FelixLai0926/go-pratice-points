@@ -44,14 +44,20 @@ func loadDatabaseConfig() (*database.PostgresConfig, error) {
 }
 
 func generateModels(gormdb *gorm.DB) error {
-	outPutPath := os.Getenv("GEN_MODEL_OUT_PATH")
-	if outPutPath == "" {
+	daoPath := os.Getenv("GEN_DAO_PATH")
+	if daoPath == "" {
+		return fmt.Errorf("GEN_DAO_PATH is not set")
+	}
+
+	modelPath := os.Getenv("GEN_MODEL_OUT_PATH")
+	if modelPath == "" {
 		return fmt.Errorf("GEN_MODEL_OUT_PATH is not set")
 	}
 
 	generator := gen.NewGenerator(gen.Config{
-		OutPath: outPutPath,
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+		OutPath:      daoPath,
+		ModelPkgPath: modelPath,
+		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 
 	generator.UseDB(gormdb)
