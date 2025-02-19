@@ -4,10 +4,13 @@ import (
 	"log"
 	"os"
 	"points/pkg/middleware"
+	"points/pkg/module/cache"
 	"points/pkg/module/config"
 	"points/pkg/module/database"
 	"points/pkg/module/logger"
 	"points/pkg/router"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -17,7 +20,6 @@ func main() {
 	}
 	defer logger.SyncLogger()
 
-	server := router.Setup()
 	envFilePath, err := config.GetEnvPath(env)
 	if err != nil {
 		log.Fatalf("Error getting .env file path: %v", err)
@@ -26,12 +28,13 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	cfg, err := config.ParseEnv[database.PostgresConfig]()
+	//Postgres
+	postgresConfig, err := config.ParseEnv[database.PostgresConfig]()
 	if err != nil {
 		log.Fatalf("Error transforming .env file to struct: %v", err)
 	}
 
-	gormdb, err := database.InitDatabase(cfg)
+	gormdb, err := database.InitDatabase(postgresConfig)
 	if err != nil {
 		log.Fatalf("Error initializing database:: %v", err)
 	}
@@ -42,7 +45,23 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	server.Use(middleware.DatabaseMiddleware(gormdb))
+	//redis
+	redisConfig, err := config.ParseEnv[cache.RedisConfig]()
+	log.Printf("redis config: %v", redisConfig)
+	if err != nil {
+		log.Fatalf("Error transforming .env file to struct: %v", err)
+	}
+
+	redisClient, err := cache.InitRedisClient(redisConfig)
+	if err != nil {
+		log.Fatalf("Error initializing redis:: %v", err)
+	}
+	defer redisClient.Close()
+
+	server := gin.Default()
 	server.Use(middleware.LoggerMiddleware())
+	server.Use(middleware.ErrorHandlerMiddleware())
+	router.RegisterTestRoutes(server)
+	router.RegisterUserRoutes(server, gormdb, redisClient)
 	server.Run(os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT"))
 }

@@ -46,7 +46,7 @@ func GetEnvPath(environment ...string) (string, error) {
 
 func InitEnv(envFilePaths ...string) error {
 	if err := godotenv.Overload(envFilePaths...); err != nil {
-		return fmt.Errorf("failed to load .env file(s): %v, file(s): %v", err, envFilePaths)
+		return fmt.Errorf("failed to load .env file(s): %w, file(s): %v", err, envFilePaths)
 	}
 
 	return nil
@@ -71,13 +71,13 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 			continue
 		}
 
-		envValue := getEnvOrDefault(envKey, field.Tag.Get("default"))
+		envValue, _ := GetEnvOrDefault(envKey, field.Tag.Get("default"), toString)
 		if field.Tag.Get("required") == "true" && envValue == "" {
 			return nil, fmt.Errorf("missing required environment variable: %s", envKey)
 		}
 
 		if err := setFieldValue(fieldValue, envValue); err != nil {
-			return nil, fmt.Errorf("failed to set value for field %s: %v", field.Name, err)
+			return nil, fmt.Errorf("failed to set value for field %s: %w", field.Name, err)
 		}
 	}
 
@@ -117,10 +117,20 @@ func setFieldValue(field reflect.Value, value string) error {
 	return nil
 }
 
-func getEnvOrDefault(key, defaultValue string) string {
+func GetEnvOrDefault[T any](key string, defaultValue T, parser func(string) (T, error)) (T, error) {
 	value := os.Getenv(key)
 	if value == "" {
-		return defaultValue
+		return defaultValue, nil
 	}
-	return value
+
+	v, err := parser(value)
+	if err != nil {
+		return defaultValue, err
+	}
+
+	return v, nil
+}
+
+func toString(value string) (string, error) {
+	return value, nil
 }

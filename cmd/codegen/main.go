@@ -44,13 +44,29 @@ func loadDatabaseConfig() (*database.PostgresConfig, error) {
 }
 
 func generateModels(gormdb *gorm.DB) error {
-	outPutPath := os.Getenv("GEN_MODEL_OUT_PATH")
-	if outPutPath == "" {
+	daoPath := os.Getenv("GEN_DAO_PATH")
+	if daoPath == "" {
+		return fmt.Errorf("GEN_DAO_PATH is not set")
+	}
+
+	modelPath := os.Getenv("GEN_MODEL_OUT_PATH")
+	if modelPath == "" {
 		return fmt.Errorf("GEN_MODEL_OUT_PATH is not set")
 	}
+
 	generator := gen.NewGenerator(gen.Config{
-		OutPath: os.Getenv("GEN_MODEL_OUT_PATH"),
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+		OutPath:      daoPath,
+		ModelPkgPath: modelPath,
+		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
+	})
+	generator.WithImportPkgPath("github.com/shopspring/decimal")
+	generator.WithDataTypeMap(map[string]func(detail gorm.ColumnType) (dataType string){
+		"decimal": func(columnType gorm.ColumnType) string {
+			return "decimal.Decimal"
+		},
+		"numeric": func(columnType gorm.ColumnType) string {
+			return "decimal.Decimal"
+		},
 	})
 
 	generator.UseDB(gormdb)

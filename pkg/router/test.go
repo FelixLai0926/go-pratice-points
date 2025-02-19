@@ -6,13 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup() *gin.Engine {
-	server := gin.Default()
-
+func RegisterTestRoutes(server *gin.Engine) {
 	apiTest := server.Group("/test")
 	{
 		apiTest.GET("/ping", test.Ping)
 	}
-
-	return server
 }

@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +31,7 @@ func TestLoggerMiddleware(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 			wantBody:   `{"message":"success"}`,
-			logChecks:  []string{`"method":"GET"`, `"path":"/test"`, `"status":200`},
+			logChecks:  []string{`"method":"GET"`, `"path":"/test"`, `"status":200`, `"client_ip":`},
 		},
 		{
 			name:  "Request with error",
@@ -46,7 +48,6 @@ func TestLoggerMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 初始化 logger
 			var logBuffer bytes.Buffer
 			writer := zapcore.AddSync(&logBuffer)
 			encoder := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
@@ -54,28 +55,44 @@ func TestLoggerMiddleware(t *testing.T) {
 			logger := zap.New(core)
 			zap.ReplaceGlobals(logger)
 
-			// 設置 Gin 路由
 			gin.SetMode(gin.TestMode)
 			router := gin.New()
 			router.Use(LoggerMiddleware())
-
 			router.GET(tt.route, tt.handler)
 
-			// 發送測試請求
 			req, _ := http.NewRequest(http.MethodGet, tt.route, nil)
 			w := httptest.NewRecorder()
-
 			router.ServeHTTP(w, req)
 
-			// 確認響應
 			assert.Equal(t, tt.wantStatus, w.Code)
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 
-			// 驗證日誌輸出
 			logOutput := logBuffer.String()
+			assert.NotEmpty(t, logOutput, "Not empty log output")
+
 			for _, check := range tt.logChecks {
-				assert.Contains(t, logOutput, check, "Log should contain: "+check)
+				assert.Contains(t, logOutput, check, "Log output should contain: "+check)
 			}
+
+			var logEntries []map[string]interface{}
+			lines := strings.Split(logOutput, "\n")
+			for _, line := range lines {
+				if len(line) == 0 {
+					continue
+				}
+				var entry map[string]interface{}
+				if err := json.Unmarshal([]byte(line), &entry); err == nil {
+					logEntries = append(logEntries, entry)
+				}
+			}
+			found := false
+			for _, entry := range logEntries {
+				if m, ok := entry["method"].(string); ok && m == "GET" {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found, "At least one log entry should contain method=GET")
 		})
 	}
 }

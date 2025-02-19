@@ -3,6 +3,8 @@ package database
 import (
 	"points/pkg/module/config"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInitDatabase(t *testing.T) {
@@ -25,25 +27,25 @@ func TestInitDatabase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			envFilePath, err := config.GetEnvPath(tt.environment)
-			checkError(t, err, tt.wantErr, "error getting .env file path", false)
-			if tt.wantErr && err != nil {
-				return
-			}
+			assert.NoError(t, err, "Unexpected error when getting .env file path")
 
 			err = config.InitEnv(envFilePath)
-			checkError(t, err, tt.wantErr, "error loading .env file", false)
-			if tt.wantErr && err != nil {
+			if tt.wantErr {
+				assert.Error(t, err, "Expected error loading .env file for environment 'unknown'")
 				return
+			} else {
+				assert.NoError(t, err, "Unexpected error when loading .env file")
 			}
 
 			cfg, err := config.ParseEnv[PostgresConfig]()
-			checkError(t, err, tt.wantErr, "error transforming .env file to struct", false)
-			if tt.wantErr && err != nil {
-				return
-			}
+			assert.NoError(t, err, "Unexpected error when parsing .env file to struct")
 
 			_, err = InitDatabase(cfg)
-			checkError(t, err, tt.wantErr, "error initializing database", true)
+			if tt.wantErr {
+				assert.Error(t, err, "Expected error when initializing database")
+			} else {
+				assert.NoError(t, err, "Unexpected error when initializing database")
+			}
 		})
 	}
 }
@@ -69,7 +71,8 @@ func TestGeneratePostgresDSN(t *testing.T) {
 					Database: "points",
 				},
 			},
-			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=disable",
+			want:    "postgres://postgres:postgres@localhost:5432/points?sslmode=disable",
+			wantErr: false,
 		},
 		{
 			name: "Valid DSN with SSLMode enable",
@@ -83,32 +86,27 @@ func TestGeneratePostgresDSN(t *testing.T) {
 					SSLMode:  "enable",
 				},
 			},
-			want: "postgres://postgres:postgres@localhost:5432/points?sslmode=enable",
+			want:    "postgres://postgres:postgres@localhost:5432/points?sslmode=enable",
+			wantErr: false,
 		},
 		{
 			name: "Nil config",
 			args: args{
 				cfg: nil,
 			},
+			want:    "",
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GeneratePostgresDSN(tt.args.cfg)
-			checkError(t, err, tt.wantErr, "error generating DSN", false)
-			if got != tt.want {
-				t.Errorf("GeneratePostgresDSN() = %v, want %v", got, tt.want)
+			if tt.wantErr {
+				assert.Error(t, err, "Expected error generating DSN")
+			} else {
+				assert.NoError(t, err, "Unexpected error generating DSN")
+				assert.Equal(t, tt.want, got, "DSN mismatch")
 			}
 		})
-	}
-}
-
-func checkError(t *testing.T, err error, wantErr bool, errMsg string, final bool) {
-	if err != nil && !wantErr {
-		t.Fatalf("%s: %v", errMsg, err)
-	}
-	if err == nil && wantErr && final {
-		t.Fatalf("%s: expected error but got nil", errMsg)
 	}
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,8 @@ func LoggerMiddleware() gin.HandlerFunc {
 		zap.L().Info("Incoming request",
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
+			zap.String("client_ip", c.ClientIP()),
+			zap.String("ctx", fmt.Sprintf("%p", c.Request.Context())),
 		)
 
 		c.Next()
