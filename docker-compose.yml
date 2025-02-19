@@ -20,6 +20,18 @@ services:
     volumes:
       - redis-data:/data
     command: [ "redis-server", "--requirepass", "redispassword" ]
+  app:
+      build:
+        context: .
+        dockerfile: ./docker/Dockerfile.app
+      container_name: points-app
+      env_file:
+        - configs/.env.example
+      ports:
+        - "8080:8080"
+      depends_on:
+        - db
+        - redis
 
 volumes:
   db-data:
