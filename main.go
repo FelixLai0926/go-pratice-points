@@ -59,7 +59,6 @@ func main() {
 	defer redisClient.Close()
 
 	server := gin.Default()
-	server.Use(middleware.DatabaseMiddleware(gormdb))
 	server.Use(middleware.LoggerMiddleware())
 	server.Use(middleware.ErrorHandlerMiddleware())
 	router.RegisterTestRoutes(server)

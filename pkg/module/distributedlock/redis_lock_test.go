@@ -2,9 +2,12 @@ package distributedlock
 
 import (
 	"context"
-	"points/pkg/module/test"
 	"testing"
 	"time"
+
+	"points/pkg/module/test"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRedisLockClient_AcquireAndRelease(t *testing.T) {
@@ -17,21 +20,15 @@ func TestRedisLockClient_AcquireAndRelease(t *testing.T) {
 	ttl := 5 * time.Second
 
 	lock, err := lockClient.Acquire(ctx, key, ttl)
-	if err != nil {
-		t.Fatalf("Acquire failed: %v", err)
-	}
+	assert.NoError(t, err, "Acquire should succeed")
+	assert.NotNil(t, lock, "Lock should not be nil")
 
-	if !mr.Exists(key) {
-		t.Errorf("lock key %q not found in Redis after acquire", key)
-	}
+	assert.True(t, mr.Exists(key), "lock key %q should exist in Redis after acquire", key)
 
-	if err := lockClient.Release(ctx, lock); err != nil {
-		t.Fatalf("Release failed: %v", err)
-	}
+	err = lockClient.Release(ctx, lock)
+	assert.NoError(t, err, "Release should succeed")
 
-	if mr.Exists(key) {
-		t.Errorf("lock key %q still exists in Redis after release", key)
-	}
+	assert.False(t, mr.Exists(key), "lock key %q should not exist in Redis after release", key)
 }
 
 func TestRedisLockClient_Renew(t *testing.T) {
@@ -44,22 +41,17 @@ func TestRedisLockClient_Renew(t *testing.T) {
 	ttl := 2 * time.Second
 
 	lock, err := lockClient.Acquire(ctx, key, ttl)
-	if err != nil {
-		t.Fatalf("Acquire failed: %v", err)
-	}
+	assert.NoError(t, err, "Acquire should succeed")
+	assert.NotNil(t, lock, "Lock should not be nil")
 
 	time.Sleep(1 * time.Second)
 
-	if err := lockClient.Renew(ctx, lock, 4*time.Second); err != nil {
-		t.Fatalf("Renew failed: %v", err)
-	}
+	err = lockClient.Renew(ctx, lock, 4*time.Second)
+	assert.NoError(t, err, "Renew should succeed")
 
 	remainingTTL := mr.TTL(key)
-	if remainingTTL < 3*time.Second {
-		t.Errorf("expected renewed TTL to be at least 3s, got %v", remainingTTL)
-	}
+	assert.GreaterOrEqual(t, remainingTTL, 3*time.Second, "Expected renewed TTL to be at least 3s, got %v", remainingTTL)
 
-	if err := lockClient.Release(ctx, lock); err != nil {
-		t.Fatalf("Release failed: %v", err)
-	}
+	err = lockClient.Release(ctx, lock)
+	assert.NoError(t, err, "Release should succeed")
 }

@@ -29,9 +29,9 @@ func newTransaction(db *gorm.DB, opts ...gen.DOOption) transaction {
 	_transaction.ALL = field.NewAsterisk(tableName)
 	_transaction.TransactionID = field.NewString(tableName, "transaction_id")
 	_transaction.Nonce = field.NewInt64(tableName, "nonce")
-	_transaction.FromAccountID = field.NewInt32(tableName, "from_account_id")
-	_transaction.ToAccountID = field.NewInt32(tableName, "to_account_id")
-	_transaction.Amount = field.NewFloat64(tableName, "amount")
+	_transaction.FromAccountID = field.NewInt64(tableName, "from_account_id")
+	_transaction.ToAccountID = field.NewInt64(tableName, "to_account_id")
+	_transaction.Amount = field.NewField(tableName, "amount")
 	_transaction.Status = field.NewInt32(tableName, "status")
 	_transaction.CreatedAt = field.NewTime(tableName, "created_at")
 	_transaction.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -47,9 +47,9 @@ type transaction struct {
 	ALL           field.Asterisk
 	TransactionID field.String
 	Nonce         field.Int64
-	FromAccountID field.Int32
-	ToAccountID   field.Int32
-	Amount        field.Float64
+	FromAccountID field.Int64
+	ToAccountID   field.Int64
+	Amount        field.Field
 	Status        field.Int32
 	CreatedAt     field.Time
 	UpdatedAt     field.Time
@@ -71,9 +71,9 @@ func (t *transaction) updateTableName(table string) *transaction {
 	t.ALL = field.NewAsterisk(table)
 	t.TransactionID = field.NewString(table, "transaction_id")
 	t.Nonce = field.NewInt64(table, "nonce")
-	t.FromAccountID = field.NewInt32(table, "from_account_id")
-	t.ToAccountID = field.NewInt32(table, "to_account_id")
-	t.Amount = field.NewFloat64(table, "amount")
+	t.FromAccountID = field.NewInt64(table, "from_account_id")
+	t.ToAccountID = field.NewInt64(table, "to_account_id")
+	t.Amount = field.NewField(table, "amount")
 	t.Status = field.NewInt32(table, "status")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")

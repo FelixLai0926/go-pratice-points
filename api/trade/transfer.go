@@ -7,19 +7,20 @@ import (
 	"points/pkg/models/trade"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 )
 
 func (h *TransferHandler) Transfer(c *gin.Context) {
 	var req struct {
-		From        *int32  `json:"from" form:"from" binding:"required"`
-		To          *int32  `json:"to" form:"to" binding:"required"`
-		Nonce       *int64  `json:"nonce" form:"nonce" binding:"required"`
-		Amount      float64 `json:"amount" form:"amount" binding:"required"`
-		AutoConfirm *bool   `json:"auto_confirm" form:"auto_confirm" default:"true"`
+		From        *int64          `json:"from" form:"from" binding:"required"`
+		To          *int64          `json:"to" form:"to" binding:"required"`
+		Nonce       *int64          `json:"nonce" form:"nonce" binding:"required"`
+		Amount      decimal.Decimal `json:"amount" form:"amount" binding:"required"`
+		AutoConfirm *bool           `json:"auto_confirm" form:"auto_confirm" default:"true"`
 	}
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(errors.Wrap(errcode.ErrInvalidRequest, "invalid request", err))
 		return
 	}
 
@@ -39,23 +40,18 @@ func (h *TransferHandler) Transfer(c *gin.Context) {
 		AutoConfirm: *req.AutoConfirm,
 	}
 
-	if err := h.Validator.ValidateTransferRequest(transferRequest); err != nil {
-		c.Error(errors.NewAppError(http.StatusBadRequest, err))
-		return
-	}
-
-	EnsureAccountRequest := &trade.EnsureAccountRequest{
+	ensureAccountRequest := &trade.EnsureAccountRequest{
 		Ctx:    c.Request.Context(),
 		UserID: *req.To,
 	}
 
-	if err := h.Service.EnsureDestinationAccount(EnsureAccountRequest); err != nil {
-		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
+	if err := h.Service.EnsureDestinationAccount(ensureAccountRequest); err != nil {
+		c.Error(err)
 		return
 	}
 
 	if err := h.Service.Transfer(transferRequest); err != nil {
-		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
+		c.Error(err)
 		return
 	}
 

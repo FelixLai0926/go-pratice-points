@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bsm/redislock"
+	"go.uber.org/zap"
 )
 
 type LockClient interface {
@@ -21,7 +22,7 @@ func WithLock(ctx context.Context, client LockClient, key string, ttl time.Durat
 	}
 	defer func() {
 		if err := client.Release(ctx, lock); err != nil {
-			fmt.Printf("failed to release lock: %v\n", err)
+			zap.L().Error("failed to release lock", zap.Error(err))
 		}
 	}()
 	return operation()

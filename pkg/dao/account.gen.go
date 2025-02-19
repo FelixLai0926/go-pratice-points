@@ -27,9 +27,9 @@ func newAccount(db *gorm.DB, opts ...gen.DOOption) account {
 
 	tableName := _account.accountDo.TableName()
 	_account.ALL = field.NewAsterisk(tableName)
-	_account.UserID = field.NewInt32(tableName, "user_id")
-	_account.AvailableBalance = field.NewFloat64(tableName, "available_balance")
-	_account.ReservedBalance = field.NewFloat64(tableName, "reserved_balance")
+	_account.UserID = field.NewInt64(tableName, "user_id")
+	_account.AvailableBalance = field.NewField(tableName, "available_balance")
+	_account.ReservedBalance = field.NewField(tableName, "reserved_balance")
 	_account.UpdatedAt = field.NewTime(tableName, "updated_at")
 
 	_account.fillFieldMap()
@@ -41,9 +41,9 @@ type account struct {
 	accountDo
 
 	ALL              field.Asterisk
-	UserID           field.Int32
-	AvailableBalance field.Float64
-	ReservedBalance  field.Float64
+	UserID           field.Int64
+	AvailableBalance field.Field
+	ReservedBalance  field.Field
 	UpdatedAt        field.Time
 
 	fieldMap map[string]field.Expr
@@ -61,9 +61,9 @@ func (a account) As(alias string) *account {
 
 func (a *account) updateTableName(table string) *account {
 	a.ALL = field.NewAsterisk(table)
-	a.UserID = field.NewInt32(table, "user_id")
-	a.AvailableBalance = field.NewFloat64(table, "available_balance")
-	a.ReservedBalance = field.NewFloat64(table, "reserved_balance")
+	a.UserID = field.NewInt64(table, "user_id")
+	a.AvailableBalance = field.NewField(table, "available_balance")
+	a.ReservedBalance = field.NewField(table, "reserved_balance")
 	a.UpdatedAt = field.NewTime(table, "updated_at")
 
 	a.fillFieldMap()

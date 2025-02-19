@@ -19,13 +19,21 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 		e := c.Errors[len(c.Errors)-1].Err
 		var appErr *errors.AppError
 		if stdErrors.As(e, &appErr) {
-			zap.L().Error(appErr.Msg, zap.Error(appErr))
-			c.JSON(appErr.HTTPCode, gin.H{
+			zap.L().Error("Request error",
+				zap.String("method", c.Request.Method),
+				zap.String("path", c.Request.URL.Path),
+				zap.String("error", appErr.Error()),
+			)
+			c.JSON(appErr.Code.HTTPCode(), gin.H{
 				"status":  appErr.Code.String(),
-				"message": http.StatusText(appErr.HTTPCode),
+				"message": http.StatusText(appErr.Code.HTTPCode()),
 			})
 		} else {
-			zap.L().Error(http.StatusText(http.StatusInternalServerError), zap.Error(e))
+			zap.L().Error("Request error",
+				zap.String("method", c.Request.Method),
+				zap.String("path", c.Request.URL.Path),
+				zap.String("error", e.Error()),
+			)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status":  errcode.ErrInternal.String(),
 				"message": http.StatusText(http.StatusInternalServerError),

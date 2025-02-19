@@ -76,12 +76,12 @@ func TestCancelHandler(t *testing.T) {
 			router.Use(middleware.ErrorHandlerMiddleware())
 			dummySvc := &mock.DummyTradeService{
 				CancelErr: tc.cancelErr,
-			}
-			dummyValidator := &mock.DummyTransValidator{
-				ValidateErr: tc.validatorErr,
+				Validator: &mock.DummyTransValidator{
+					ValidateErr: tc.validatorErr,
+				},
 			}
 
-			handler := NewTransferHandler(nil, dummySvc, dummyValidator)
+			handler := NewTransferHandler(nil, dummySvc)
 			router.POST("/cancel", handler.Cancel)
 
 			jsonData, err := json.Marshal(tc.requestBody)

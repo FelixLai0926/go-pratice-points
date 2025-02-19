@@ -1,10 +1,14 @@
 package eventpayload
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/shopspring/decimal"
+)
 
 type TransferPayload struct {
-	Action string  `json:"action"`
-	Amount float64 `json:"amount"`
+	Action string          `json:"action"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 func (p TransferPayload) ToJSON() (string, error) {

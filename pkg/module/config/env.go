@@ -46,7 +46,7 @@ func GetEnvPath(environment ...string) (string, error) {
 
 func InitEnv(envFilePaths ...string) error {
 	if err := godotenv.Overload(envFilePaths...); err != nil {
-		return fmt.Errorf("failed to load .env file(s): %v, file(s): %v", err, envFilePaths)
+		return fmt.Errorf("failed to load .env file(s): %w, file(s): %v", err, envFilePaths)
 	}
 
 	return nil
@@ -77,7 +77,7 @@ func ParseEnv[TResponse any]() (*TResponse, error) {
 		}
 
 		if err := setFieldValue(fieldValue, envValue); err != nil {
-			return nil, fmt.Errorf("failed to set value for field %s: %v", field.Name, err)
+			return nil, fmt.Errorf("failed to set value for field %s: %w", field.Name, err)
 		}
 	}
 

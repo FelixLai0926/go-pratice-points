@@ -12,19 +12,19 @@ import (
 func InitDatabase(cfg *PostgresConfig) (*gorm.DB, error) {
 	dsn, err := GeneratePostgresDSN(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate DSN: %v", err)
+		return nil, fmt.Errorf("failed to generate DSN: %w", err)
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %v", err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get database connection: %v", err)
+		return nil, fmt.Errorf("failed to get database connection: %w", err)
 	}
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConn)
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn)

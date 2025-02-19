@@ -97,11 +97,11 @@ func TestTransferHandler(t *testing.T) {
 			router.Use(middleware.ErrorHandlerMiddleware())
 			dummyService := &mock.DummyTradeService{
 				TransferErr: tc.transferErr,
+				Validator: &mock.DummyTransValidator{
+					ValidateErr: tc.validateErr,
+				},
 			}
-			dummyValidator := &mock.DummyTransValidator{
-				ValidateErr: tc.validateErr,
-			}
-			handler := NewTransferHandler(nil, dummyService, dummyValidator)
+			handler := NewTransferHandler(nil, dummyService)
 			router.POST("/transfer", handler.Transfer)
 
 			jsonData, err := json.Marshal(tc.requestBody)

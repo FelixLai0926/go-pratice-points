@@ -7,15 +7,13 @@ import (
 )
 
 type TransferHandler struct {
-	DB        *gorm.DB
-	Service   service.TradeService
-	Validator service.TradeValidator
+	DB      *gorm.DB
+	Service service.TradeService
 }
 
-func NewTransferHandler(db *gorm.DB, service service.TradeService, validator service.TradeValidator) *TransferHandler {
+func NewTransferHandler(db *gorm.DB, service service.TradeService) *TransferHandler {
 	return &TransferHandler{
-		DB:        db,
-		Service:   service,
-		Validator: validator,
+		DB:      db,
+		Service: service,
 	}
 }

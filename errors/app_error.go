@@ -7,10 +7,9 @@ import (
 )
 
 type AppError struct {
-	HTTPCode int
-	Code     errcode.ErrorCode
-	Msg      string
-	Err      error
+	Code errcode.ErrorCode
+	Msg  string
+	Err  error
 }
 
 func (v *AppError) Error() string {
@@ -35,23 +34,20 @@ func Wrap(code errcode.ErrorCode, msg string, err error) error {
 func NewAppError(httpCode int, err error) *AppError {
 	if err == nil {
 		return &AppError{
-			HTTPCode: httpCode,
-			Code:     errcode.ErrOK,
-			Msg:      errcode.ErrOK.GetMessage(),
-			Err:      nil,
+			Code: errcode.ErrOK,
+			Msg:  errcode.ErrOK.GetMessage(),
+			Err:  nil,
 		}
 	}
 
 	var appErr *AppError
 	if errors.As(err, &appErr) {
-		appErr.HTTPCode = httpCode
 		return appErr
 	}
 
 	return &AppError{
-		HTTPCode: httpCode,
-		Code:     errcode.ErrInternal,
-		Msg:      errcode.ErrInternal.GetMessage(),
-		Err:      err,
+		Code: errcode.ErrInternal,
+		Msg:  errcode.ErrInternal.GetMessage(),
+		Err:  err,
 	}
 }

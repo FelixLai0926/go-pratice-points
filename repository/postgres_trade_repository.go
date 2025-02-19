@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"context"
 	"points/pkg/models/enum/tcc"
 	"points/pkg/models/orm"
 
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -14,51 +16,55 @@ func NewTradeRepo() TradeRepository {
 	return &tradeRepo{}
 }
 
-func (r *tradeRepo) CreateAccount(tx *gorm.DB, userID int32) error {
-	return tx.Create(&orm.Account{
+func (r *tradeRepo) CreateAccount(ctx context.Context, tx *gorm.DB, userID int64) error {
+	return tx.WithContext(ctx).Create(&orm.Account{
 		UserID:           userID,
-		AvailableBalance: 0,
-		ReservedBalance:  0,
+		AvailableBalance: decimal.Zero,
+		ReservedBalance:  decimal.Zero,
 	}).Error
 }
 
-func (r *tradeRepo) GetAccount(tx *gorm.DB, userID int32) (*orm.Account, error) {
+func (r *tradeRepo) GetAccount(ctx context.Context, tx *gorm.DB, userID int64) (*orm.Account, error) {
 	var account orm.Account
-	if err := tx.First(&account, "user_id = ?", userID).Error; err != nil {
+	err := tx.WithContext(ctx).
+		Where(&orm.Account{UserID: userID}).
+		First(&account).Error
+	if err != nil {
 		return nil, err
 	}
 
 	return &account, nil
 }
 
-func (r *tradeRepo) UpdateAccount(tx *gorm.DB, account *orm.Account) error {
-	return tx.Save(account).Error
+func (r *tradeRepo) UpdateAccount(ctx context.Context, tx *gorm.DB, account *orm.Account) error {
+	return tx.WithContext(ctx).Save(account).Error
 }
 
-func (r *tradeRepo) CreateTransaction(tx *gorm.DB, trans *orm.Transaction) error {
-	return tx.Create(trans).Error
+func (r *tradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+	return tx.WithContext(ctx).Create(trans).Error
 }
 
-func (r *tradeRepo) CreateOrUpdateTransaction(tx *gorm.DB, trans *orm.Transaction) error {
-	return tx.Clauses(clause.OnConflict{
+func (r *tradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+	return tx.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "from_account_id"}, {Name: "nonce"}},
 		DoUpdates: clause.AssignmentColumns([]string{"status"}),
 	}).Create(trans).Error
 }
 
-func (r *tradeRepo) UpdateTransaction(tx *gorm.DB, trans *orm.Transaction) error {
-	return tx.Model(&orm.Transaction{}).
-		Where("from_account_id = ? AND nonce = ?", trans.FromAccountID, trans.Nonce).
-		Updates(trans).Error
+func (r *tradeRepo) UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+	return tx.WithContext(ctx).Model(&orm.Transaction{}).
+		Where(&orm.Transaction{FromAccountID: trans.FromAccountID, Nonce: trans.Nonce}).
+		Updates(map[string]interface{}{"status": trans.Status}).Error
 }
 
-func (r *tradeRepo) CreateTransactionEvent(tx *gorm.DB, event *orm.TransactionEvent) error {
-	return tx.Create(event).Error
+func (r *tradeRepo) CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.TransactionEvent) error {
+	return tx.WithContext(ctx).Create(event).Error
 }
 
-func (r *tradeRepo) GetTransaction(tx *gorm.DB, nonce int64, from int32, status *tcc.Status) (*orm.Transaction, error) {
+func (r *tradeRepo) GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.Transaction, error) {
 	var trans orm.Transaction
-	q := tx.Where("nonce = ? AND from_account_id = ?", nonce, from)
+
+	q := tx.WithContext(ctx).Where(&orm.Transaction{FromAccountID: from, Nonce: nonce})
 	if status != nil {
 		q = q.Where("status = ?", *status)
 	}

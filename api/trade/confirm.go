@@ -11,17 +11,17 @@ import (
 
 func (h *TransferHandler) Confirm(c *gin.Context) {
 	var req struct {
-		From  *int32 `json:"from" form:"from" binding:"required"`
-		To    *int32 `json:"to" form:"to" binding:"required"`
+		From  *int64 `json:"from" form:"from" binding:"required"`
+		To    *int64 `json:"to" form:"to" binding:"required"`
 		Nonce *int64 `json:"nonce" form:"nonce" binding:"required"`
 	}
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(errors.Wrap(errcode.ErrInvalidRequest, "invalid request", err))
 		return
 	}
 
-	transferRequest := &trade.ConfirmRequest{
+	confirmRequest := &trade.ConfirmRequest{
 		BaseRequest: trade.BaseRequest{
 			Ctx:   c.Request.Context(),
 			From:  *req.From,
@@ -30,13 +30,8 @@ func (h *TransferHandler) Confirm(c *gin.Context) {
 		},
 	}
 
-	if err := h.Validator.ValidateConfirmRequest(transferRequest); err != nil {
-		c.Error(errors.NewAppError(http.StatusBadRequest, err))
-		return
-	}
-
-	if err := h.Service.ManualConfirm(transferRequest); err != nil {
-		c.Error(errors.NewAppError(http.StatusInternalServerError, err))
+	if err := h.Service.ManualConfirm(confirmRequest); err != nil {
+		c.Error(err)
 		return
 	}
 

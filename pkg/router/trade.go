@@ -14,9 +14,9 @@ import (
 func RegisterUserRoutes(server *gin.Engine, db *gorm.DB, redisClient *redis.Client) {
 	balanceRepo := repository.NewTradeRepo()
 	lockClient := distributedlock.NewRedisLockClient(redisClient)
-	tradeService := tcc.NewTCCService(db, balanceRepo, lockClient)
 	tradeValidator := tcc.NewTCCValidator(db, balanceRepo)
-	transferHandler := trade.NewTransferHandler(db, tradeService, tradeValidator)
+	tradeService := tcc.NewTCCService(db, balanceRepo, tradeValidator, lockClient)
+	transferHandler := trade.NewTransferHandler(db, tradeService)
 
 	user := server.Group("/trade")
 	{

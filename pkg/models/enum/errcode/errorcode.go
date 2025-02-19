@@ -1,6 +1,9 @@
 package errcode
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 type ErrorCode int
 
@@ -58,5 +61,40 @@ func (e ErrorCode) GetMessage() string {
 		return "create event failed"
 	default:
 		return "unknown error"
+	}
+}
+
+func (e ErrorCode) HTTPCode() int {
+	switch e {
+	case ErrOK:
+		return http.StatusOK
+	case ErrInternal:
+		return http.StatusInternalServerError
+	case ErrInvalidRequest:
+		return http.StatusBadRequest
+	case ErrNotFound:
+		return http.StatusBadRequest
+	case ErrUnauthorized:
+		return http.StatusUnauthorized
+	case ErrConflict:
+		return http.StatusConflict
+	case ErrGetAccount:
+		return http.StatusBadRequest
+	case ErrInsufficientBalance:
+		return http.StatusBadRequest
+	case ErrUpdateAccount:
+		return http.StatusInternalServerError
+	case ErrCreateTransaction:
+		return http.StatusInternalServerError
+	case ErrGetTransaction:
+		return http.StatusBadRequest
+	case ErrUpdateTransaction:
+		return http.StatusInternalServerError
+	case ErrPayloadMarshal:
+		return http.StatusInternalServerError
+	case ErrCreateEvent:
+		return http.StatusInternalServerError
+	default:
+		return http.StatusInternalServerError
 	}
 }

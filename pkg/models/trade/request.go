@@ -1,17 +1,21 @@
 package trade
 
-import "context"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 type BaseRequest struct {
 	Ctx   context.Context
-	From  int32
-	To    int32
+	From  int64
+	To    int64
 	Nonce int64
 }
 
 type TransferRequest struct {
 	BaseRequest
-	Amount      float64
+	Amount      decimal.Decimal
 	AutoConfirm bool
 }
 
@@ -25,5 +29,5 @@ type CancelRequest struct {
 
 type EnsureAccountRequest struct {
 	Ctx    context.Context
-	UserID int32
+	UserID int64
 }

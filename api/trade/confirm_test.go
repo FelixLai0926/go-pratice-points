@@ -76,12 +76,12 @@ func TestConfirmHandler(t *testing.T) {
 			router.Use(middleware.ErrorHandlerMiddleware())
 			dummySvc := &mock.DummyTradeService{
 				ManualConfirmErr: tc.manualConfirmErr,
-			}
-			dummyValidator := &mock.DummyTransValidator{
-				ValidateErr: tc.validateErr,
+				Validator: &mock.DummyTransValidator{
+					ValidateErr: tc.validateErr,
+				},
 			}
 
-			handler := NewTransferHandler(nil, dummySvc, dummyValidator)
+			handler := NewTransferHandler(nil, dummySvc)
 			router.POST("/confirm", handler.Confirm)
 
 			jsonData, err := json.Marshal(tc.requestBody)

@@ -59,6 +59,15 @@ func generateModels(gormdb *gorm.DB) error {
 		ModelPkgPath: modelPath,
 		Mode:         gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
+	generator.WithImportPkgPath("github.com/shopspring/decimal")
+	generator.WithDataTypeMap(map[string]func(detail gorm.ColumnType) (dataType string){
+		"decimal": func(columnType gorm.ColumnType) string {
+			return "decimal.Decimal"
+		},
+		"numeric": func(columnType gorm.ColumnType) string {
+			return "decimal.Decimal"
+		},
+	})
 
 	generator.UseDB(gormdb)
 

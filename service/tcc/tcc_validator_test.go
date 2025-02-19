@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +24,7 @@ func TestValidateRequest(t *testing.T) {
 		Nonce:         123,
 		FromAccountID: 1,
 		ToAccountID:   2,
-		Amount:        100.0,
+		Amount:        decimal.NewFromInt(100),
 		Status:        int32(tcc.Pending),
 		TransactionID: "tx-123",
 	}
@@ -45,7 +46,7 @@ func TestValidateRequest(t *testing.T) {
 					To:    2,
 					Nonce: 1,
 				},
-				Amount:      100.0,
+				Amount:      decimal.NewFromInt(100.0),
 				AutoConfirm: true,
 			},
 			expectErrText: "source account not found",
@@ -59,7 +60,7 @@ func TestValidateRequest(t *testing.T) {
 					To:    2,
 					Nonce: 123,
 				},
-				Amount:      100.0,
+				Amount:      decimal.NewFromInt(100),
 				AutoConfirm: true,
 			},
 			expectErrText: "nonce already used",
@@ -73,7 +74,7 @@ func TestValidateRequest(t *testing.T) {
 					To:    2,
 					Nonce: 456,
 				},
-				Amount:      100.0,
+				Amount:      decimal.NewFromInt(100),
 				AutoConfirm: true,
 			},
 			expectErrText: "",
@@ -152,7 +153,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 				if err := db.First(&account, "user_id = ?", 1).Error; err != nil {
 					t.Fatalf("failed to query account: %v", err)
 				}
-				account.ReservedBalance = 50
+				account.ReservedBalance.Equal(decimal.NewFromInt(50))
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
@@ -160,7 +161,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 					Nonce:         789,
 					FromAccountID: 1,
 					ToAccountID:   2,
-					Amount:        100,
+					Amount:        decimal.NewFromInt(100),
 					Status:        int32(tcc.Pending),
 					TransactionID: "tx-789",
 				}
@@ -187,7 +188,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 				if err := db.First(&account, "user_id = ?", 1).Error; err != nil {
 					t.Fatalf("failed to query account: %v", err)
 				}
-				account.ReservedBalance = 150
+				account.ReservedBalance = decimal.NewFromInt(150)
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
@@ -195,7 +196,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 					Nonce:         456,
 					FromAccountID: 1,
 					ToAccountID:   2,
-					Amount:        100,
+					Amount:        decimal.NewFromInt(100),
 					Status:        int32(tcc.Pending),
 					TransactionID: "tx-456",
 				}
@@ -287,7 +288,7 @@ func TestValidateCancelRequest(t *testing.T) {
 				if err := db.First(&account, "user_id = ?", 1).Error; err != nil {
 					t.Fatalf("failed to query account: %v", err)
 				}
-				account.ReservedBalance = 50
+				account.ReservedBalance = decimal.NewFromInt(50)
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
@@ -295,7 +296,7 @@ func TestValidateCancelRequest(t *testing.T) {
 					Nonce:         789,
 					FromAccountID: 1,
 					ToAccountID:   2,
-					Amount:        100,
+					Amount:        decimal.NewFromInt(100),
 					Status:        int32(tcc.Pending),
 					TransactionID: "tx-789",
 				}
@@ -322,7 +323,7 @@ func TestValidateCancelRequest(t *testing.T) {
 				if err := db.First(&account, "user_id = ?", 1).Error; err != nil {
 					t.Fatalf("failed to query account: %v", err)
 				}
-				account.ReservedBalance = 150
+				account.ReservedBalance = decimal.NewFromInt(150)
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
@@ -330,7 +331,7 @@ func TestValidateCancelRequest(t *testing.T) {
 					Nonce:         456,
 					FromAccountID: 1,
 					ToAccountID:   2,
-					Amount:        100,
+					Amount:        decimal.NewFromInt(100),
 					Status:        int32(tcc.Pending),
 					TransactionID: "tx-456",
 				}

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"points/pkg/models/enum/tcc"
 	"points/pkg/models/orm"
 
@@ -8,12 +9,12 @@ import (
 )
 
 type TradeRepository interface {
-	CreateAccount(tx *gorm.DB, userID int32) error
-	GetAccount(tx *gorm.DB, userID int32) (*orm.Account, error)
-	UpdateAccount(tx *gorm.DB, account *orm.Account) error
-	CreateTransaction(tx *gorm.DB, trans *orm.Transaction) error
-	CreateOrUpdateTransaction(tx *gorm.DB, trans *orm.Transaction) error
-	UpdateTransaction(tx *gorm.DB, trans *orm.Transaction) error
-	CreateTransactionEvent(tx *gorm.DB, event *orm.TransactionEvent) error
-	GetTransaction(tx *gorm.DB, nonce int64, from int32, status *tcc.Status) (*orm.Transaction, error)
+	CreateAccount(ctx context.Context, tx *gorm.DB, userID int64) error
+	GetAccount(ctx context.Context, tx *gorm.DB, userID int64) (*orm.Account, error)
+	UpdateAccount(ctx context.Context, tx *gorm.DB, account *orm.Account) error
+	CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error
+	CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error
+	UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error
+	CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.TransactionEvent) error
+	GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.Transaction, error)
 }
