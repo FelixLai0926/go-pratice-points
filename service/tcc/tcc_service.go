@@ -175,7 +175,7 @@ func (s *TCCService) updateAccountAndCreateTransaction(tx *gorm.DB, rq *trade.Ba
 		return errors.Wrap(errcode.ErrUpdateAccount, fmt.Sprintf("%s phase - update account", status.String()), err)
 	}
 
-	trans := &orm.Transaction{
+	trans := &orm.TransactionDAO{
 		TransactionID: uuid.New().String(),
 		Nonce:         rq.Nonce,
 		FromAccountID: rq.From,
@@ -198,7 +198,7 @@ func (s *TCCService) updateAccountAndCreateTransaction(tx *gorm.DB, rq *trade.Ba
 		return errors.Wrap(errcode.ErrPayloadMarshal, fmt.Sprintf("%s phase - failed to marshal payload", status.String()), err)
 	}
 
-	tryEvent := &orm.TransactionEvent{
+	tryEvent := &orm.Transaction_event{
 		TransactionID: trans.TransactionID,
 		EventType:     status.String(),
 		Payload:       tryEventPayloadJSON,

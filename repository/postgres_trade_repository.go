@@ -40,31 +40,31 @@ func (r *tradeRepo) UpdateAccount(ctx context.Context, tx *gorm.DB, account *orm
 	return tx.WithContext(ctx).Save(account).Error
 }
 
-func (r *tradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+func (r *tradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
 	return tx.WithContext(ctx).Create(trans).Error
 }
 
-func (r *tradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+func (r *tradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
 	return tx.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "from_account_id"}, {Name: "nonce"}},
 		DoUpdates: clause.AssignmentColumns([]string{"status"}),
 	}).Create(trans).Error
 }
 
-func (r *tradeRepo) UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
-	return tx.WithContext(ctx).Model(&orm.Transaction{}).
-		Where(&orm.Transaction{FromAccountID: trans.FromAccountID, Nonce: trans.Nonce}).
+func (r *tradeRepo) UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
+	return tx.WithContext(ctx).Model(&orm.TransactionDAO{}).
+		Where(&orm.TransactionDAO{FromAccountID: trans.FromAccountID, Nonce: trans.Nonce}).
 		Updates(map[string]interface{}{"status": trans.Status}).Error
 }
 
-func (r *tradeRepo) CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.TransactionEvent) error {
+func (r *tradeRepo) CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.Transaction_event) error {
 	return tx.WithContext(ctx).Create(event).Error
 }
 
-func (r *tradeRepo) GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.Transaction, error) {
-	var trans orm.Transaction
+func (r *tradeRepo) GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.TransactionDAO, error) {
+	var trans orm.TransactionDAO
 
-	q := tx.WithContext(ctx).Where(&orm.Transaction{FromAccountID: from, Nonce: nonce})
+	q := tx.WithContext(ctx).Where(&orm.TransactionDAO{FromAccountID: from, Nonce: nonce})
 	if status != nil {
 		q = q.Where("status = ?", *status)
 	}

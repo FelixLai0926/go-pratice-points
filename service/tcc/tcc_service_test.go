@@ -214,7 +214,7 @@ func TestConfirm(t *testing.T) {
 			name: "Confirm success",
 			setup: func(t *testing.T) (db *gorm.DB, svc service.TradeService, cleanup func()) {
 				db, _, svc, miniredis := setupTestService(t)
-				pendingTx := &orm.Transaction{
+				pendingTx := &orm.TransactionDAO{
 					TransactionID: "tx-confirm-success",
 					Nonce:         456,
 					FromAccountID: 1,
@@ -245,7 +245,7 @@ func TestConfirm(t *testing.T) {
 			},
 			expectedErrSubstring: "",
 			validate: func(t *testing.T, db *gorm.DB) {
-				var tx orm.Transaction
+				var tx orm.TransactionDAO
 				if err := db.Where("nonce = ? AND from_account_id = ?", 456, 1).First(&tx).Error; err != nil {
 					t.Fatalf("failed to query transaction: %v", err)
 				}
@@ -316,7 +316,7 @@ func TestCancel(t *testing.T) {
 			name: "Cancel success",
 			setup: func(t *testing.T) (db *gorm.DB, svc service.TradeService, cleanup func()) {
 				db, _, svc, miniredis := setupTestService(t)
-				pendingTx := &orm.Transaction{
+				pendingTx := &orm.TransactionDAO{
 					TransactionID: "tx-cancel-success",
 					Nonce:         789,
 					FromAccountID: 1,

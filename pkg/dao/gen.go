@@ -16,44 +16,44 @@ import (
 )
 
 var (
-	Q                = new(Query)
-	Account          *account
-	Transaction      *transaction
-	TransactionEvent *transactionEvent
+	Q                 = new(Query)
+	Account           *account
+	TransactionDAO    *transactionDAO
+	Transaction_event *transaction_event
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	Account = &Q.Account
-	Transaction = &Q.Transaction
-	TransactionEvent = &Q.TransactionEvent
+	TransactionDAO = &Q.TransactionDAO
+	Transaction_event = &Q.Transaction_event
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:               db,
-		Account:          newAccount(db, opts...),
-		Transaction:      newTransaction(db, opts...),
-		TransactionEvent: newTransactionEvent(db, opts...),
+		db:                db,
+		Account:           newAccount(db, opts...),
+		TransactionDAO:    newTransactionDAO(db, opts...),
+		Transaction_event: newTransaction_event(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Account          account
-	Transaction      transaction
-	TransactionEvent transactionEvent
+	Account           account
+	TransactionDAO    transactionDAO
+	Transaction_event transaction_event
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:               db,
-		Account:          q.Account.clone(db),
-		Transaction:      q.Transaction.clone(db),
-		TransactionEvent: q.TransactionEvent.clone(db),
+		db:                db,
+		Account:           q.Account.clone(db),
+		TransactionDAO:    q.TransactionDAO.clone(db),
+		Transaction_event: q.Transaction_event.clone(db),
 	}
 }
 
@@ -67,24 +67,24 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:               db,
-		Account:          q.Account.replaceDB(db),
-		Transaction:      q.Transaction.replaceDB(db),
-		TransactionEvent: q.TransactionEvent.replaceDB(db),
+		db:                db,
+		Account:           q.Account.replaceDB(db),
+		TransactionDAO:    q.TransactionDAO.replaceDB(db),
+		Transaction_event: q.Transaction_event.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Account          IAccountDo
-	Transaction      ITransactionDo
-	TransactionEvent ITransactionEventDo
+	Account           IAccountDo
+	TransactionDAO    ITransactionDAODo
+	Transaction_event ITransaction_eventDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Account:          q.Account.WithContext(ctx),
-		Transaction:      q.Transaction.WithContext(ctx),
-		TransactionEvent: q.TransactionEvent.WithContext(ctx),
+		Account:           q.Account.WithContext(ctx),
+		TransactionDAO:    q.TransactionDAO.WithContext(ctx),
+		Transaction_event: q.Transaction_event.WithContext(ctx),
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"points/pkg/middleware"
@@ -14,17 +15,19 @@ import (
 )
 
 func main() {
-	env := "example"
-	if err := logger.InitLogger(env); err != nil {
-		panic("failed to initialize logger: " + err.Error())
+	env := flag.String("env", "example", "specify the environment to use (example, development, production, etc.)")
+	flag.Parse()
+
+	if err := logger.InitLogger(*env); err != nil {
+		log.Fatalf("Error initializing logger: %v", err)
 	}
 	defer logger.SyncLogger()
 
-	envFilePath, err := config.GetEnvPath(env)
+	envData, err := config.GetEnvData(*env)
 	if err != nil {
-		log.Fatalf("Error getting .env file path: %v", err)
+		log.Fatalf("Error getting env data: %v", err)
 	}
-	if err := config.InitEnv(envFilePath); err != nil {
+	if err := config.InitEmbeddedEnv(envData); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 

@@ -20,7 +20,7 @@ import (
 func TestValidateRequest(t *testing.T) {
 	db, validator := setupTestValidator(t)
 
-	existingTrans := orm.Transaction{
+	existingTrans := orm.TransactionDAO{
 		Nonce:         123,
 		FromAccountID: 1,
 		ToAccountID:   2,
@@ -157,7 +157,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
-				pendingTx := orm.Transaction{
+				pendingTx := orm.TransactionDAO{
 					Nonce:         789,
 					FromAccountID: 1,
 					ToAccountID:   2,
@@ -192,7 +192,7 @@ func TestValidateConfirmRequest(t *testing.T) {
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
-				pendingTx := orm.Transaction{
+				pendingTx := orm.TransactionDAO{
 					Nonce:         456,
 					FromAccountID: 1,
 					ToAccountID:   2,
@@ -292,7 +292,7 @@ func TestValidateCancelRequest(t *testing.T) {
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
-				pendingTx := orm.Transaction{
+				pendingTx := orm.TransactionDAO{
 					Nonce:         789,
 					FromAccountID: 1,
 					ToAccountID:   2,
@@ -327,7 +327,7 @@ func TestValidateCancelRequest(t *testing.T) {
 				if err := db.Save(&account).Error; err != nil {
 					t.Fatalf("failed to update account: %v", err)
 				}
-				pendingTx := orm.Transaction{
+				pendingTx := orm.TransactionDAO{
 					Nonce:         456,
 					FromAccountID: 1,
 					ToAccountID:   2,

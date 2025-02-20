@@ -1,12 +1,12 @@
-ENV ?= example
+ENV ?= development
 
-ifneq ("$(wildcard .env.$(ENV))","")
--include ./configs/.env.$(ENV)
+ifneq ("$(wildcard $(ENV).env)","")
+-include ./configs/$(ENV).env
 endif
 
 gen-models:
-	@echo "Generating GORM models..."
-	go run ./cmd/codegen/main.go
+	@echo "Generating GORM models with environment $(ENV)..."
+	go run ./cmd/codegen/main.go -env=$(ENV)
 	@echo "Models generated in ./pkg/models directory."
 
 clean-models:

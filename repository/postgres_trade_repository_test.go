@@ -69,7 +69,7 @@ func TestCreateAndUpdateTransaction(t *testing.T) {
 	repoImpl := NewTradeRepo()
 	ctx := context.Background()
 
-	trans := orm.Transaction{
+	trans := orm.TransactionDAO{
 		Nonce:         1,
 		FromAccountID: 1,
 		ToAccountID:   2,
@@ -86,7 +86,7 @@ func TestCreateAndUpdateTransaction(t *testing.T) {
 		t.Fatalf("UpdateTransaction error: %v", err)
 	}
 
-	var gotTrans orm.Transaction
+	var gotTrans orm.TransactionDAO
 	err := db.Where("from_account_id = ? AND nonce = ?", trans.FromAccountID, trans.Nonce).First(&gotTrans).Error
 	if err != nil {
 		t.Fatalf("failed to query inserted/updated transaction: %v", err)
@@ -100,7 +100,7 @@ func TestCreateTransactionEvent(t *testing.T) {
 	db := test.NewTestContainerDB(t)
 	repoImpl := NewTradeRepo()
 	ctx := context.Background()
-	event := orm.TransactionEvent{
+	event := orm.Transaction_event{
 		TransactionID: "test-uuid",
 		EventType:     "try",
 		Payload:       `{"action":"try","amount":50}`,
@@ -109,7 +109,7 @@ func TestCreateTransactionEvent(t *testing.T) {
 		t.Fatalf("CreateTransactionEvent error: %v", err)
 	}
 
-	var gotEvent orm.TransactionEvent
+	var gotEvent orm.Transaction_event
 	if err := db.First(&gotEvent, "transaction_id = ?", event.TransactionID).Error; err != nil {
 		t.Fatalf("failed to get transaction event: %v", err)
 	}
@@ -122,7 +122,7 @@ func TestCreateOrUpdateTransaction(t *testing.T) {
 	db := test.NewTestContainerDB(t)
 	repoImpl := NewTradeRepo()
 	ctx := context.Background()
-	txRecord := &orm.Transaction{
+	txRecord := &orm.TransactionDAO{
 		TransactionID: "tx1",
 		Nonce:         1,
 		FromAccountID: 100,
@@ -134,7 +134,7 @@ func TestCreateOrUpdateTransaction(t *testing.T) {
 	err := repoImpl.CreateOrUpdateTransaction(ctx, db, txRecord)
 	assert.NoError(t, err, "error inserting transaction")
 
-	var got orm.Transaction
+	var got orm.TransactionDAO
 	err = db.Where("from_account_id = ? AND nonce = ?", 100, 1).First(&got).Error
 	assert.NoError(t, err, "failed to query inserted transaction")
 	assert.Equal(t, "tx1", got.TransactionID)
@@ -144,7 +144,7 @@ func TestCreateOrUpdateTransaction(t *testing.T) {
 	err = repoImpl.CreateOrUpdateTransaction(ctx, db, txRecord)
 	assert.NoError(t, err, "error updating transaction")
 
-	var updated orm.Transaction
+	var updated orm.TransactionDAO
 	err = db.Where("from_account_id = ? AND nonce = ?", 100, 1).First(&updated).Error
 	assert.NoError(t, err, "failed to query updated transaction")
 	assert.Equal(t, int32(2), updated.Status, "status should be updated to 2")
@@ -158,7 +158,7 @@ func TestGetTransaction(t *testing.T) {
 	testFrom := int64(1)
 	testStatus := tcc.Pending
 
-	trans := orm.Transaction{
+	trans := orm.TransactionDAO{
 		Nonce:         testNonce,
 		FromAccountID: testFrom,
 		ToAccountID:   2,

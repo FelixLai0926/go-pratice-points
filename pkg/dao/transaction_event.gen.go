@@ -19,27 +19,27 @@ import (
 	"points/pkg/models/orm"
 )
 
-func newTransactionEvent(db *gorm.DB, opts ...gen.DOOption) transactionEvent {
-	_transactionEvent := transactionEvent{}
+func newTransaction_event(db *gorm.DB, opts ...gen.DOOption) transaction_event {
+	_transaction_event := transaction_event{}
 
-	_transactionEvent.transactionEventDo.UseDB(db, opts...)
-	_transactionEvent.transactionEventDo.UseModel(&orm.TransactionEvent{})
+	_transaction_event.transaction_eventDo.UseDB(db, opts...)
+	_transaction_event.transaction_eventDo.UseModel(&orm.Transaction_event{})
 
-	tableName := _transactionEvent.transactionEventDo.TableName()
-	_transactionEvent.ALL = field.NewAsterisk(tableName)
-	_transactionEvent.ID = field.NewInt32(tableName, "id")
-	_transactionEvent.TransactionID = field.NewString(tableName, "transaction_id")
-	_transactionEvent.EventType = field.NewString(tableName, "event_type")
-	_transactionEvent.Payload = field.NewString(tableName, "payload")
-	_transactionEvent.CreatedAt = field.NewTime(tableName, "created_at")
+	tableName := _transaction_event.transaction_eventDo.TableName()
+	_transaction_event.ALL = field.NewAsterisk(tableName)
+	_transaction_event.ID = field.NewInt32(tableName, "id")
+	_transaction_event.TransactionID = field.NewString(tableName, "transaction_id")
+	_transaction_event.EventType = field.NewString(tableName, "event_type")
+	_transaction_event.Payload = field.NewString(tableName, "payload")
+	_transaction_event.CreatedAt = field.NewTime(tableName, "created_at")
 
-	_transactionEvent.fillFieldMap()
+	_transaction_event.fillFieldMap()
 
-	return _transactionEvent
+	return _transaction_event
 }
 
-type transactionEvent struct {
-	transactionEventDo
+type transaction_event struct {
+	transaction_eventDo
 
 	ALL           field.Asterisk
 	ID            field.Int32
@@ -51,17 +51,17 @@ type transactionEvent struct {
 	fieldMap map[string]field.Expr
 }
 
-func (t transactionEvent) Table(newTableName string) *transactionEvent {
-	t.transactionEventDo.UseTable(newTableName)
+func (t transaction_event) Table(newTableName string) *transaction_event {
+	t.transaction_eventDo.UseTable(newTableName)
 	return t.updateTableName(newTableName)
 }
 
-func (t transactionEvent) As(alias string) *transactionEvent {
-	t.transactionEventDo.DO = *(t.transactionEventDo.As(alias).(*gen.DO))
+func (t transaction_event) As(alias string) *transaction_event {
+	t.transaction_eventDo.DO = *(t.transaction_eventDo.As(alias).(*gen.DO))
 	return t.updateTableName(alias)
 }
 
-func (t *transactionEvent) updateTableName(table string) *transactionEvent {
+func (t *transaction_event) updateTableName(table string) *transaction_event {
 	t.ALL = field.NewAsterisk(table)
 	t.ID = field.NewInt32(table, "id")
 	t.TransactionID = field.NewString(table, "transaction_id")
@@ -74,7 +74,7 @@ func (t *transactionEvent) updateTableName(table string) *transactionEvent {
 	return t
 }
 
-func (t *transactionEvent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+func (t *transaction_event) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := t.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
@@ -83,7 +83,7 @@ func (t *transactionEvent) GetFieldByName(fieldName string) (field.OrderExpr, bo
 	return _oe, ok
 }
 
-func (t *transactionEvent) fillFieldMap() {
+func (t *transaction_event) fillFieldMap() {
 	t.fieldMap = make(map[string]field.Expr, 5)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["transaction_id"] = t.TransactionID
@@ -92,58 +92,58 @@ func (t *transactionEvent) fillFieldMap() {
 	t.fieldMap["created_at"] = t.CreatedAt
 }
 
-func (t transactionEvent) clone(db *gorm.DB) transactionEvent {
-	t.transactionEventDo.ReplaceConnPool(db.Statement.ConnPool)
+func (t transaction_event) clone(db *gorm.DB) transaction_event {
+	t.transaction_eventDo.ReplaceConnPool(db.Statement.ConnPool)
 	return t
 }
 
-func (t transactionEvent) replaceDB(db *gorm.DB) transactionEvent {
-	t.transactionEventDo.ReplaceDB(db)
+func (t transaction_event) replaceDB(db *gorm.DB) transaction_event {
+	t.transaction_eventDo.ReplaceDB(db)
 	return t
 }
 
-type transactionEventDo struct{ gen.DO }
+type transaction_eventDo struct{ gen.DO }
 
-type ITransactionEventDo interface {
+type ITransaction_eventDo interface {
 	gen.SubQuery
-	Debug() ITransactionEventDo
-	WithContext(ctx context.Context) ITransactionEventDo
+	Debug() ITransaction_eventDo
+	WithContext(ctx context.Context) ITransaction_eventDo
 	WithResult(fc func(tx gen.Dao)) gen.ResultInfo
 	ReplaceDB(db *gorm.DB)
-	ReadDB() ITransactionEventDo
-	WriteDB() ITransactionEventDo
+	ReadDB() ITransaction_eventDo
+	WriteDB() ITransaction_eventDo
 	As(alias string) gen.Dao
-	Session(config *gorm.Session) ITransactionEventDo
+	Session(config *gorm.Session) ITransaction_eventDo
 	Columns(cols ...field.Expr) gen.Columns
-	Clauses(conds ...clause.Expression) ITransactionEventDo
-	Not(conds ...gen.Condition) ITransactionEventDo
-	Or(conds ...gen.Condition) ITransactionEventDo
-	Select(conds ...field.Expr) ITransactionEventDo
-	Where(conds ...gen.Condition) ITransactionEventDo
-	Order(conds ...field.Expr) ITransactionEventDo
-	Distinct(cols ...field.Expr) ITransactionEventDo
-	Omit(cols ...field.Expr) ITransactionEventDo
-	Join(table schema.Tabler, on ...field.Expr) ITransactionEventDo
-	LeftJoin(table schema.Tabler, on ...field.Expr) ITransactionEventDo
-	RightJoin(table schema.Tabler, on ...field.Expr) ITransactionEventDo
-	Group(cols ...field.Expr) ITransactionEventDo
-	Having(conds ...gen.Condition) ITransactionEventDo
-	Limit(limit int) ITransactionEventDo
-	Offset(offset int) ITransactionEventDo
+	Clauses(conds ...clause.Expression) ITransaction_eventDo
+	Not(conds ...gen.Condition) ITransaction_eventDo
+	Or(conds ...gen.Condition) ITransaction_eventDo
+	Select(conds ...field.Expr) ITransaction_eventDo
+	Where(conds ...gen.Condition) ITransaction_eventDo
+	Order(conds ...field.Expr) ITransaction_eventDo
+	Distinct(cols ...field.Expr) ITransaction_eventDo
+	Omit(cols ...field.Expr) ITransaction_eventDo
+	Join(table schema.Tabler, on ...field.Expr) ITransaction_eventDo
+	LeftJoin(table schema.Tabler, on ...field.Expr) ITransaction_eventDo
+	RightJoin(table schema.Tabler, on ...field.Expr) ITransaction_eventDo
+	Group(cols ...field.Expr) ITransaction_eventDo
+	Having(conds ...gen.Condition) ITransaction_eventDo
+	Limit(limit int) ITransaction_eventDo
+	Offset(offset int) ITransaction_eventDo
 	Count() (count int64, err error)
-	Scopes(funcs ...func(gen.Dao) gen.Dao) ITransactionEventDo
-	Unscoped() ITransactionEventDo
-	Create(values ...*orm.TransactionEvent) error
-	CreateInBatches(values []*orm.TransactionEvent, batchSize int) error
-	Save(values ...*orm.TransactionEvent) error
-	First() (*orm.TransactionEvent, error)
-	Take() (*orm.TransactionEvent, error)
-	Last() (*orm.TransactionEvent, error)
-	Find() ([]*orm.TransactionEvent, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*orm.TransactionEvent, err error)
-	FindInBatches(result *[]*orm.TransactionEvent, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Scopes(funcs ...func(gen.Dao) gen.Dao) ITransaction_eventDo
+	Unscoped() ITransaction_eventDo
+	Create(values ...*orm.Transaction_event) error
+	CreateInBatches(values []*orm.Transaction_event, batchSize int) error
+	Save(values ...*orm.Transaction_event) error
+	First() (*orm.Transaction_event, error)
+	Take() (*orm.Transaction_event, error)
+	Last() (*orm.Transaction_event, error)
+	Find() ([]*orm.Transaction_event, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*orm.Transaction_event, err error)
+	FindInBatches(result *[]*orm.Transaction_event, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*orm.TransactionEvent) (info gen.ResultInfo, err error)
+	Delete(...*orm.Transaction_event) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -151,163 +151,163 @@ type ITransactionEventDo interface {
 	UpdateColumnSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	UpdateColumns(value interface{}) (info gen.ResultInfo, err error)
 	UpdateFrom(q gen.SubQuery) gen.Dao
-	Attrs(attrs ...field.AssignExpr) ITransactionEventDo
-	Assign(attrs ...field.AssignExpr) ITransactionEventDo
-	Joins(fields ...field.RelationField) ITransactionEventDo
-	Preload(fields ...field.RelationField) ITransactionEventDo
-	FirstOrInit() (*orm.TransactionEvent, error)
-	FirstOrCreate() (*orm.TransactionEvent, error)
-	FindByPage(offset int, limit int) (result []*orm.TransactionEvent, count int64, err error)
+	Attrs(attrs ...field.AssignExpr) ITransaction_eventDo
+	Assign(attrs ...field.AssignExpr) ITransaction_eventDo
+	Joins(fields ...field.RelationField) ITransaction_eventDo
+	Preload(fields ...field.RelationField) ITransaction_eventDo
+	FirstOrInit() (*orm.Transaction_event, error)
+	FirstOrCreate() (*orm.Transaction_event, error)
+	FindByPage(offset int, limit int) (result []*orm.Transaction_event, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
-	Returning(value interface{}, columns ...string) ITransactionEventDo
+	Returning(value interface{}, columns ...string) ITransaction_eventDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 }
 
-func (t transactionEventDo) Debug() ITransactionEventDo {
+func (t transaction_eventDo) Debug() ITransaction_eventDo {
 	return t.withDO(t.DO.Debug())
 }
 
-func (t transactionEventDo) WithContext(ctx context.Context) ITransactionEventDo {
+func (t transaction_eventDo) WithContext(ctx context.Context) ITransaction_eventDo {
 	return t.withDO(t.DO.WithContext(ctx))
 }
 
-func (t transactionEventDo) ReadDB() ITransactionEventDo {
+func (t transaction_eventDo) ReadDB() ITransaction_eventDo {
 	return t.Clauses(dbresolver.Read)
 }
 
-func (t transactionEventDo) WriteDB() ITransactionEventDo {
+func (t transaction_eventDo) WriteDB() ITransaction_eventDo {
 	return t.Clauses(dbresolver.Write)
 }
 
-func (t transactionEventDo) Session(config *gorm.Session) ITransactionEventDo {
+func (t transaction_eventDo) Session(config *gorm.Session) ITransaction_eventDo {
 	return t.withDO(t.DO.Session(config))
 }
 
-func (t transactionEventDo) Clauses(conds ...clause.Expression) ITransactionEventDo {
+func (t transaction_eventDo) Clauses(conds ...clause.Expression) ITransaction_eventDo {
 	return t.withDO(t.DO.Clauses(conds...))
 }
 
-func (t transactionEventDo) Returning(value interface{}, columns ...string) ITransactionEventDo {
+func (t transaction_eventDo) Returning(value interface{}, columns ...string) ITransaction_eventDo {
 	return t.withDO(t.DO.Returning(value, columns...))
 }
 
-func (t transactionEventDo) Not(conds ...gen.Condition) ITransactionEventDo {
+func (t transaction_eventDo) Not(conds ...gen.Condition) ITransaction_eventDo {
 	return t.withDO(t.DO.Not(conds...))
 }
 
-func (t transactionEventDo) Or(conds ...gen.Condition) ITransactionEventDo {
+func (t transaction_eventDo) Or(conds ...gen.Condition) ITransaction_eventDo {
 	return t.withDO(t.DO.Or(conds...))
 }
 
-func (t transactionEventDo) Select(conds ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Select(conds ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Select(conds...))
 }
 
-func (t transactionEventDo) Where(conds ...gen.Condition) ITransactionEventDo {
+func (t transaction_eventDo) Where(conds ...gen.Condition) ITransaction_eventDo {
 	return t.withDO(t.DO.Where(conds...))
 }
 
-func (t transactionEventDo) Order(conds ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Order(conds ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Order(conds...))
 }
 
-func (t transactionEventDo) Distinct(cols ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Distinct(cols ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Distinct(cols...))
 }
 
-func (t transactionEventDo) Omit(cols ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Omit(cols ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Omit(cols...))
 }
 
-func (t transactionEventDo) Join(table schema.Tabler, on ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Join(table schema.Tabler, on ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Join(table, on...))
 }
 
-func (t transactionEventDo) LeftJoin(table schema.Tabler, on ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) LeftJoin(table schema.Tabler, on ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.LeftJoin(table, on...))
 }
 
-func (t transactionEventDo) RightJoin(table schema.Tabler, on ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) RightJoin(table schema.Tabler, on ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.RightJoin(table, on...))
 }
 
-func (t transactionEventDo) Group(cols ...field.Expr) ITransactionEventDo {
+func (t transaction_eventDo) Group(cols ...field.Expr) ITransaction_eventDo {
 	return t.withDO(t.DO.Group(cols...))
 }
 
-func (t transactionEventDo) Having(conds ...gen.Condition) ITransactionEventDo {
+func (t transaction_eventDo) Having(conds ...gen.Condition) ITransaction_eventDo {
 	return t.withDO(t.DO.Having(conds...))
 }
 
-func (t transactionEventDo) Limit(limit int) ITransactionEventDo {
+func (t transaction_eventDo) Limit(limit int) ITransaction_eventDo {
 	return t.withDO(t.DO.Limit(limit))
 }
 
-func (t transactionEventDo) Offset(offset int) ITransactionEventDo {
+func (t transaction_eventDo) Offset(offset int) ITransaction_eventDo {
 	return t.withDO(t.DO.Offset(offset))
 }
 
-func (t transactionEventDo) Scopes(funcs ...func(gen.Dao) gen.Dao) ITransactionEventDo {
+func (t transaction_eventDo) Scopes(funcs ...func(gen.Dao) gen.Dao) ITransaction_eventDo {
 	return t.withDO(t.DO.Scopes(funcs...))
 }
 
-func (t transactionEventDo) Unscoped() ITransactionEventDo {
+func (t transaction_eventDo) Unscoped() ITransaction_eventDo {
 	return t.withDO(t.DO.Unscoped())
 }
 
-func (t transactionEventDo) Create(values ...*orm.TransactionEvent) error {
+func (t transaction_eventDo) Create(values ...*orm.Transaction_event) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return t.DO.Create(values)
 }
 
-func (t transactionEventDo) CreateInBatches(values []*orm.TransactionEvent, batchSize int) error {
+func (t transaction_eventDo) CreateInBatches(values []*orm.Transaction_event, batchSize int) error {
 	return t.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (t transactionEventDo) Save(values ...*orm.TransactionEvent) error {
+func (t transaction_eventDo) Save(values ...*orm.Transaction_event) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return t.DO.Save(values)
 }
 
-func (t transactionEventDo) First() (*orm.TransactionEvent, error) {
+func (t transaction_eventDo) First() (*orm.Transaction_event, error) {
 	if result, err := t.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*orm.TransactionEvent), nil
+		return result.(*orm.Transaction_event), nil
 	}
 }
 
-func (t transactionEventDo) Take() (*orm.TransactionEvent, error) {
+func (t transaction_eventDo) Take() (*orm.Transaction_event, error) {
 	if result, err := t.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*orm.TransactionEvent), nil
+		return result.(*orm.Transaction_event), nil
 	}
 }
 
-func (t transactionEventDo) Last() (*orm.TransactionEvent, error) {
+func (t transaction_eventDo) Last() (*orm.Transaction_event, error) {
 	if result, err := t.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*orm.TransactionEvent), nil
+		return result.(*orm.Transaction_event), nil
 	}
 }
 
-func (t transactionEventDo) Find() ([]*orm.TransactionEvent, error) {
+func (t transaction_eventDo) Find() ([]*orm.Transaction_event, error) {
 	result, err := t.DO.Find()
-	return result.([]*orm.TransactionEvent), err
+	return result.([]*orm.Transaction_event), err
 }
 
-func (t transactionEventDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*orm.TransactionEvent, err error) {
-	buf := make([]*orm.TransactionEvent, 0, batchSize)
+func (t transaction_eventDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*orm.Transaction_event, err error) {
+	buf := make([]*orm.Transaction_event, 0, batchSize)
 	err = t.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -315,49 +315,49 @@ func (t transactionEventDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch
 	return results, err
 }
 
-func (t transactionEventDo) FindInBatches(result *[]*orm.TransactionEvent, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (t transaction_eventDo) FindInBatches(result *[]*orm.Transaction_event, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return t.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (t transactionEventDo) Attrs(attrs ...field.AssignExpr) ITransactionEventDo {
+func (t transaction_eventDo) Attrs(attrs ...field.AssignExpr) ITransaction_eventDo {
 	return t.withDO(t.DO.Attrs(attrs...))
 }
 
-func (t transactionEventDo) Assign(attrs ...field.AssignExpr) ITransactionEventDo {
+func (t transaction_eventDo) Assign(attrs ...field.AssignExpr) ITransaction_eventDo {
 	return t.withDO(t.DO.Assign(attrs...))
 }
 
-func (t transactionEventDo) Joins(fields ...field.RelationField) ITransactionEventDo {
+func (t transaction_eventDo) Joins(fields ...field.RelationField) ITransaction_eventDo {
 	for _, _f := range fields {
 		t = *t.withDO(t.DO.Joins(_f))
 	}
 	return &t
 }
 
-func (t transactionEventDo) Preload(fields ...field.RelationField) ITransactionEventDo {
+func (t transaction_eventDo) Preload(fields ...field.RelationField) ITransaction_eventDo {
 	for _, _f := range fields {
 		t = *t.withDO(t.DO.Preload(_f))
 	}
 	return &t
 }
 
-func (t transactionEventDo) FirstOrInit() (*orm.TransactionEvent, error) {
+func (t transaction_eventDo) FirstOrInit() (*orm.Transaction_event, error) {
 	if result, err := t.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*orm.TransactionEvent), nil
+		return result.(*orm.Transaction_event), nil
 	}
 }
 
-func (t transactionEventDo) FirstOrCreate() (*orm.TransactionEvent, error) {
+func (t transaction_eventDo) FirstOrCreate() (*orm.Transaction_event, error) {
 	if result, err := t.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*orm.TransactionEvent), nil
+		return result.(*orm.Transaction_event), nil
 	}
 }
 
-func (t transactionEventDo) FindByPage(offset int, limit int) (result []*orm.TransactionEvent, count int64, err error) {
+func (t transaction_eventDo) FindByPage(offset int, limit int) (result []*orm.Transaction_event, count int64, err error) {
 	result, err = t.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -372,7 +372,7 @@ func (t transactionEventDo) FindByPage(offset int, limit int) (result []*orm.Tra
 	return
 }
 
-func (t transactionEventDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+func (t transaction_eventDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
 	count, err = t.Count()
 	if err != nil {
 		return
@@ -382,15 +382,15 @@ func (t transactionEventDo) ScanByPage(result interface{}, offset int, limit int
 	return
 }
 
-func (t transactionEventDo) Scan(result interface{}) (err error) {
+func (t transaction_eventDo) Scan(result interface{}) (err error) {
 	return t.DO.Scan(result)
 }
 
-func (t transactionEventDo) Delete(models ...*orm.TransactionEvent) (result gen.ResultInfo, err error) {
+func (t transaction_eventDo) Delete(models ...*orm.Transaction_event) (result gen.ResultInfo, err error) {
 	return t.DO.Delete(models)
 }
 
-func (t *transactionEventDo) withDO(do gen.Dao) *transactionEventDo {
+func (t *transaction_eventDo) withDO(do gen.Dao) *transaction_eventDo {
 	t.DO = *do.(*gen.DO)
 	return t
 }

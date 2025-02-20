@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-const TableNameTransactionEvent = "transaction_event"
+const TableNameTransaction_event = "transaction_event"
 
-// TransactionEvent mapped from table <transaction_event>
-type TransactionEvent struct {
+// Transaction_event mapped from table <transaction_event>
+type Transaction_event struct {
 	ID            int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	TransactionID string    `gorm:"column:transaction_id;not null" json:"transaction_id"`
 	EventType     string    `gorm:"column:event_type;not null" json:"event_type"`
@@ -19,7 +19,7 @@ type TransactionEvent struct {
 	CreatedAt     time.Time `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
-// TableName TransactionEvent's table name
-func (*TransactionEvent) TableName() string {
-	return TableNameTransactionEvent
+// TableName Transaction_event's table name
+func (*Transaction_event) TableName() string {
+	return TableNameTransaction_event
 }
