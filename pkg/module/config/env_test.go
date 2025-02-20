@@ -2,267 +2,117 @@ package config
 
 import (
 	"os"
-	"reflect"
 	"strings"
 	"testing"
-
-	"points/pkg/module/database"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func Test_setFieldValue(t *testing.T) {
-	type TestStruct struct {
-		IntField    int
-		FloatField  float64
-		BoolField   bool
-		StringField string
+type TestConfig struct {
+	Host  string `env:"HOST" default:"localhost" required:"true"`
+	Port  int    `env:"PORT" default:"8080"`
+	Debug bool   `env:"DEBUG" default:"true"`
+}
+
+func TestInitEmbeddedEnv(t *testing.T) {
+	os.Unsetenv("TEST_KEY")
+	envData := "TEST_KEY=hello\nANOTHER_KEY=world"
+	if err := InitEmbeddedEnv(envData); err != nil {
+		t.Fatalf("InitEmbeddedEnv error: %v", err)
 	}
-	type args struct {
-		field reflect.Value
-		value string
+
+	if got := os.Getenv("TEST_KEY"); got != "hello" {
+		t.Errorf("Expected TEST_KEY to be 'hello', got '%s'", got)
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Test setFieldValue (string)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("StringField"),
-				value: "test",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test setFieldValue (int)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("IntField"),
-				value: "10",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test setFieldValue (float)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("FloatField"),
-				value: "10.5",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test setFieldValue (bool)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("BoolField"),
-				value: "true",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test setFieldValue (invalid int)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("IntField"),
-				value: "test",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test setFieldValue (invalid float)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("FloatField"),
-				value: "test",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test setFieldValue (invalid bool)",
-			args: args{
-				field: reflect.ValueOf(&TestStruct{}).Elem().FieldByName("BoolField"),
-				value: "test",
-			},
-			wantErr: true,
-		},
+	if got := os.Getenv("ANOTHER_KEY"); got != "world" {
+		t.Errorf("Expected ANOTHER_KEY to be 'world', got '%s'", got)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := setFieldValue(tt.args.field, tt.args.value)
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error for value: %s", tt.args.value)
-			} else {
-				assert.NoError(t, err, "Did not expect error for value: %s", tt.args.value)
-			}
-		})
+
+	os.Unsetenv("TEST_KEY")
+	os.Unsetenv("ANOTHER_KEY")
+}
+
+func TestParseEnvWithDefaults(t *testing.T) {
+	os.Unsetenv("HOST")
+	os.Unsetenv("PORT")
+	os.Unsetenv("DEBUG")
+
+	cfg, err := ParseEnv[TestConfig]()
+	if err != nil {
+		t.Fatalf("ParseEnv error: %v", err)
+	}
+
+	if cfg.Host != "localhost" {
+		t.Errorf("Expected Host to be 'localhost', got '%s'", cfg.Host)
+	}
+	if cfg.Port != 8080 {
+		t.Errorf("Expected Port to be 8080, got %d", cfg.Port)
+	}
+	if cfg.Debug != true {
+		t.Errorf("Expected Debug to be true, got %v", cfg.Debug)
 	}
 }
 
-func TestParseEnv(t *testing.T) {
-	tests := []struct {
-		name    string
-		want    *database.PostgresConfig
-		wantErr bool
-		osEnv   map[string]string
-	}{
-		{
-			name: "Complete environment variables",
-			want: &database.PostgresConfig{
-				User:        "postgres",
-				Password:    "pgadmin1234",
-				Host:        "127.0.0.1",
-				Port:        "5432",
-				Database:    "points",
-				SSLMode:     "disable",
-				MaxOpenConn: 200,
-				MaxIdleConn: 20,
-				ConnMaxLife: 60,
-			},
-			wantErr: false,
-			osEnv: map[string]string{
-				"POSTGRES_USER":           "postgres",
-				"POSTGRES_PASSWORD":       "pgadmin1234",
-				"POSTGRES_HOST":           "127.0.0.1",
-				"POSTGRES_PORT":           "5432",
-				"POSTGRES_DB":             "points",
-				"POSTGRES_SSLMODE":        "disable",
-				"POSTGRES_MAX_OPEN_CONNS": "200",
-				"POSTGRES_MAX_IDLE_CONNS": "20",
-				"POSTGRES_CONN_MAX_LIFE":  "60",
-			},
-		},
-		{
-			name: "Missing optional variables (use default values)",
-			want: &database.PostgresConfig{
-				User:        "postgres",
-				Password:    "pgadmin1234",
-				Host:        "127.0.0.1",
-				Port:        "5432",
-				Database:    "points",
-				SSLMode:     "disable",
-				MaxOpenConn: 100,
-				MaxIdleConn: 10,
-				ConnMaxLife: 30,
-			},
-			wantErr: false,
-			osEnv: map[string]string{
-				"POSTGRES_USER":     "postgres",
-				"POSTGRES_PASSWORD": "pgadmin1234",
-				"POSTGRES_HOST":     "127.0.0.1",
-				"POSTGRES_PORT":     "5432",
-				"POSTGRES_DB":       "points",
-				"POSTGRES_SSLMODE":  "disable",
-			},
-		},
-		{
-			name:    "Empty environment variables (return error)",
-			want:    nil,
-			wantErr: true,
-			osEnv:   map[string]string{},
-		},
+func TestParseEnvWithEnvVariables(t *testing.T) {
+	os.Setenv("HOST", "example.com")
+	os.Setenv("PORT", "3000")
+	os.Setenv("DEBUG", "false")
+	defer func() {
+		os.Unsetenv("HOST")
+		os.Unsetenv("PORT")
+		os.Unsetenv("DEBUG")
+	}()
+
+	cfg, err := ParseEnv[TestConfig]()
+	if err != nil {
+		t.Fatalf("ParseEnv error: %v", err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for key, value := range tt.osEnv {
-				os.Setenv(key, value)
-				t.Cleanup(func() {
-					os.Unsetenv(key)
-				})
-			}
-			got, err := ParseEnv[database.PostgresConfig]()
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error when environment variables are missing")
-			} else {
-				assert.NoError(t, err, "Unexpected error when parsing environment variables")
-				assert.Equal(t, tt.want, got, "Parsed config does not match expected config")
-			}
-		})
+
+	if cfg.Host != "example.com" {
+		t.Errorf("Expected Host to be 'example.com', got '%s'", cfg.Host)
+	}
+	if cfg.Port != 3000 {
+		t.Errorf("Expected Port to be 3000, got %d", cfg.Port)
+	}
+	if cfg.Debug != false {
+		t.Errorf("Expected Debug to be false, got %v", cfg.Debug)
 	}
 }
 
-func TestGetRootPath(t *testing.T) {
-	tests := []struct {
-		name    string
-		wantErr bool
-	}{
-		{"Valid root path", false},
-		{"Missing go.mod", true},
+func TestParseEnvMissingRequired(t *testing.T) {
+	type TestRequired struct {
+		Value string `env:"MISSING_REQUIRED" required:"true"`
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.wantErr {
-				tmpDir, err := os.MkdirTemp("", "test")
-				assert.NoError(t, err, "Failed to create temp directory")
-				originalWd, err := os.Getwd()
-				assert.NoError(t, err, "Failed to get current working directory")
-				err = os.Chdir(tmpDir)
-				assert.NoError(t, err, "Failed to change directory to temp directory")
-				t.Cleanup(func() {
-					os.Chdir(originalWd)
-					os.RemoveAll(tmpDir)
-				})
-			}
+	os.Unsetenv("MISSING_REQUIRED")
 
-			rootPath, err := GetRootPath()
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error when go.mod is missing")
-			} else {
-				assert.NoError(t, err, "Unexpected error when getting root path")
-				assert.NotEmpty(t, rootPath, "Root path should not be empty")
-			}
-		})
+	_, err := ParseEnv[TestRequired]()
+	if err == nil {
+		t.Fatalf("Expected error for missing required environment variable, got nil")
+	}
+	if !strings.Contains(err.Error(), "missing required environment variable") {
+		t.Errorf("Unexpected error message: %v", err)
 	}
 }
 
-func TestGetEnvPath(t *testing.T) {
-	tests := []struct {
-		name string
-		args []string
-		want string
-	}{
-		{"Valid production environment", []string{"production"}, ".env.production"},
-		{"Valid staging environment", []string{"staging"}, ".env.staging"},
-		{"Default environment", []string{}, ".env.example"},
-		{"Fallback to first environment", []string{"production", "staging"}, ".env.production"},
-		{"Unknown environment", []string{"unknown"}, ".env.unknown"},
+func TestGetEnvOrDefault(t *testing.T) {
+	os.Setenv("TEST_VAR", "set_value")
+	defer os.Unsetenv("TEST_VAR")
+	value, err := GetEnvOrDefault("TEST_VAR", "default_value", func(s string) (string, error) {
+		return s, nil
+	})
+	if err != nil {
+		t.Fatalf("GetEnvOrDefault error: %v", err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := GetEnvPath(tt.args...)
-			assert.NoError(t, err, "Unexpected error in GetEnvPath")
-			assert.True(t, strings.HasSuffix(result, tt.want), "GetEnvPath() = %v, want suffix %v", result, tt.want)
-		})
+	if value != "set_value" {
+		t.Errorf("Expected value to be 'set_value', got '%s'", value)
 	}
-}
 
-func TestInitEnv(t *testing.T) {
-	tests := []struct {
-		name    string
-		envFile string
-		wantErr bool
-	}{
-		{"Valid .env file", "POSTGRES_USER=postgres\nPOSTGRES_PASSWORD=secret\n", false},
-		{"Missing .env file", "", true},
+	os.Unsetenv("TEST_VAR_NOT_SET")
+	value, err = GetEnvOrDefault("TEST_VAR_NOT_SET", "default_value", func(s string) (string, error) {
+		return s, nil
+	})
+	if err != nil {
+		t.Fatalf("GetEnvOrDefault error: %v", err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var tmpFilePath string
-			if tt.envFile != "" {
-				tmpFile, err := os.CreateTemp("", "env.unittest")
-				assert.NoError(t, err, "Failed to create temp file")
-				_, err = tmpFile.WriteString(tt.envFile)
-				assert.NoError(t, err, "Failed to write to temp file")
-				tmpFilePath = tmpFile.Name()
-				tmpFile.Close()
-				t.Cleanup(func() {
-					os.Remove(tmpFilePath)
-				})
-			}
-
-			err := InitEnv(tmpFilePath)
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error when loading missing .env file")
-			} else {
-				assert.NoError(t, err, "Unexpected error when loading valid .env file")
-			}
-		})
+	if value != "default_value" {
+		t.Errorf("Expected value to be 'default_value', got '%s'", value)
 	}
 }

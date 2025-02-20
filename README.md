@@ -35,7 +35,7 @@ A distributed points system built in Go that manages user accounts, transactions
 - **Distributed Locking**  
   Implements distributed locking using Redis (via [redislock](https://github.com/bsm/redislock)) to ensure data consistency in concurrent scenarios.
 
-- **Testing / 測試**  
+- **Testing**  
   Comprehensive unit and integration tests using Testify, miniredis, and Testcontainers.  
 
 ---
@@ -99,15 +99,17 @@ D:.
 
 1. **Build the application**
     ```bash
-    go build -o points-system .
+    go build -o points-system.exe
     ```
 2. **Run the application**
     ```bash
-    ./points-system
+    ./points-system.exe
     ```
 
 ## Docker Deployment
-The project can be containerized using Docker Compose. Below is an example docker-compose.yml file:
+The project can be containerized using Docker Compose. 
+
+You can also specify the environment by setting an environment variable (e.g., APP_ENV) in the Compose file.
 
 1. **Build the application**
     ```bash
@@ -128,9 +130,9 @@ The project uses environment variables for configuration, with files named .env.
 Place your configuration files in the configs/ directory. For example:
 
 ```plaintext
-.env.example (default)
-.env.production
-.env.development
+example.env (default)
+production.env
+development.env
 ```
 The config module loads and parses these configuration files.
 

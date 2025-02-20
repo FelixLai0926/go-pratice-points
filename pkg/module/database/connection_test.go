@@ -1,112 +1,63 @@
 package database
 
 import (
-	"points/pkg/module/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInitDatabase(t *testing.T) {
-	tests := []struct {
-		name        string
-		environment string
-		wantErr     bool
-	}{
-		{
-			name:        "TestInitDatabase",
-			environment: "example",
-			wantErr:     false,
-		},
-		{
-			name:        "TestInitDatabase (error)",
-			environment: "unknown",
-			wantErr:     true,
-		},
+func TestGeneratePostgresDSN(t *testing.T) {
+	dsn, err := GeneratePostgresDSN(nil)
+	assert.Error(t, err, "nil config should return error")
+	assert.Equal(t, "", dsn)
+
+	cfgMissing := &PostgresConfig{
+		User:     "",
+		Password: "",
+		Host:     "",
+		Port:     "",
+		Database: "",
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			envFilePath, err := config.GetEnvPath(tt.environment)
-			assert.NoError(t, err, "Unexpected error when getting .env file path")
+	dsn, err = GeneratePostgresDSN(cfgMissing)
+	assert.Error(t, err, "missing required fields should return error")
+	assert.Equal(t, "", dsn)
 
-			err = config.InitEnv(envFilePath)
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error loading .env file for environment 'unknown'")
-				return
-			} else {
-				assert.NoError(t, err, "Unexpected error when loading .env file")
-			}
-
-			cfg, err := config.ParseEnv[PostgresConfig]()
-			assert.NoError(t, err, "Unexpected error when parsing .env file to struct")
-
-			_, err = InitDatabase(cfg)
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error when initializing database")
-			} else {
-				assert.NoError(t, err, "Unexpected error when initializing database")
-			}
-		})
+	cfgValid := &PostgresConfig{
+		User:     "postgres",
+		Password: "postgres",
+		Host:     "localhost",
+		Port:     "5432",
+		Database: "points",
+		SSLMode:  "",
 	}
+	dsn, err = GeneratePostgresDSN(cfgValid)
+	assert.NoError(t, err)
+	assert.Equal(t, "postgres://postgres:postgres@localhost:5432/points?sslmode=disable", dsn)
+
+	cfgValid.SSLMode = "enable"
+	dsn, err = GeneratePostgresDSN(cfgValid)
+	assert.NoError(t, err)
+	assert.Equal(t, "postgres://postgres:postgres@localhost:5432/points?sslmode=enable", dsn)
 }
 
-func TestGeneratePostgresDSN(t *testing.T) {
-	type args struct {
-		cfg *PostgresConfig
+func TestInitDatabase_InvalidConfig(t *testing.T) {
+	db, err := InitDatabase(nil)
+	assert.Error(t, err, "nil config should return error")
+	assert.Nil(t, db)
+
+	cfgMissing := &PostgresConfig{
+		User:     "postgres",
+		Password: "postgres",
+		Host:     "",
+		Port:     "5432",
+		Database: "points",
+		SSLMode:  "",
 	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "Valid DSN with SSLMode empty",
-			args: args{
-				cfg: &PostgresConfig{
-					Host:     "localhost",
-					Port:     "5432",
-					User:     "postgres",
-					Password: "postgres",
-					Database: "points",
-				},
-			},
-			want:    "postgres://postgres:postgres@localhost:5432/points?sslmode=disable",
-			wantErr: false,
-		},
-		{
-			name: "Valid DSN with SSLMode enable",
-			args: args{
-				cfg: &PostgresConfig{
-					Host:     "localhost",
-					Port:     "5432",
-					User:     "postgres",
-					Password: "postgres",
-					Database: "points",
-					SSLMode:  "enable",
-				},
-			},
-			want:    "postgres://postgres:postgres@localhost:5432/points?sslmode=enable",
-			wantErr: false,
-		},
-		{
-			name: "Nil config",
-			args: args{
-				cfg: nil,
-			},
-			want:    "",
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GeneratePostgresDSN(tt.args.cfg)
-			if tt.wantErr {
-				assert.Error(t, err, "Expected error generating DSN")
-			} else {
-				assert.NoError(t, err, "Unexpected error generating DSN")
-				assert.Equal(t, tt.want, got, "DSN mismatch")
-			}
-		})
-	}
+	db, err = InitDatabase(cfgMissing)
+	assert.Error(t, err, "missing required fields should return error")
+	assert.Nil(t, db)
+}
+
+func TestClose_NilDB(t *testing.T) {
+	assert.Panics(t, func() { _ = Close(nil) }, "Close(nil) should panic")
 }

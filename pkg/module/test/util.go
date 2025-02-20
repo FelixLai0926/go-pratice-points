@@ -25,7 +25,7 @@ func NewDummyDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err, "failed to open in-memory sqlite database")
 
-	err = db.AutoMigrate(&orm.Account{}, &orm.Transaction{}, &orm.TransactionEvent{})
+	err = db.AutoMigrate(&orm.Account{}, &orm.TransactionDAO{}, &orm.Transaction_event{})
 	assert.NoError(t, err, "failed to migrate database schema")
 	return db
 }
@@ -99,7 +99,7 @@ func NewTestContainerDB(t *testing.T) *gorm.DB {
 	sqlDB.SetMaxOpenConns(10)
 	sqlDB.SetMaxIdleConns(10)
 
-	err = db.AutoMigrate(&orm.Account{}, &orm.Transaction{}, &orm.TransactionEvent{})
+	err = db.AutoMigrate(&orm.Account{}, &orm.TransactionDAO{}, &orm.Transaction_event{})
 	assert.NoError(t, err, "failed to migrate database schema")
 
 	return db

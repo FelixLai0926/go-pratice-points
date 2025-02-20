@@ -15,7 +15,7 @@ type DummyTradeRepo struct {
 	FailCreateTransaction bool
 	Delay                 *time.Duration
 	DummyAccount          *orm.Account
-	DummyTransaction      *orm.Transaction
+	DummyTransaction      *orm.TransactionDAO
 }
 
 func (r *DummyTradeRepo) CreateAccount(ctx context.Context, tx *gorm.DB, userID int64) error {
@@ -39,7 +39,7 @@ func (r *DummyTradeRepo) UpdateAccount(ctx context.Context, tx *gorm.DB, account
 	}
 	return nil
 }
-func (r *DummyTradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+func (r *DummyTradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
 	if r.Delay != nil {
 		time.Sleep(*r.Delay)
 	}
@@ -48,7 +48,7 @@ func (r *DummyTradeRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, tra
 	}
 	return nil
 }
-func (r *DummyTradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+func (r *DummyTradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
 	if r.Delay != nil {
 		time.Sleep(*r.Delay)
 	}
@@ -57,19 +57,19 @@ func (r *DummyTradeRepo) CreateOrUpdateTransaction(ctx context.Context, tx *gorm
 	}
 	return nil
 }
-func (r *DummyTradeRepo) UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.Transaction) error {
+func (r *DummyTradeRepo) UpdateTransaction(ctx context.Context, tx *gorm.DB, trans *orm.TransactionDAO) error {
 	if r.Delay != nil {
 		time.Sleep(*r.Delay)
 	}
 	return nil
 }
-func (r *DummyTradeRepo) CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.TransactionEvent) error {
+func (r *DummyTradeRepo) CreateTransactionEvent(ctx context.Context, tx *gorm.DB, event *orm.Transaction_event) error {
 	if r.Delay != nil {
 		time.Sleep(*r.Delay)
 	}
 	return nil
 }
-func (r *DummyTradeRepo) GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.Transaction, error) {
+func (r *DummyTradeRepo) GetTransaction(ctx context.Context, tx *gorm.DB, nonce, from int64, status *tcc.Status) (*orm.TransactionDAO, error) {
 	if r.Delay != nil {
 		time.Sleep(*r.Delay)
 	}

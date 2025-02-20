@@ -10,10 +10,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const TableNameTransaction = "transaction"
+const TableNameTransactionDAO = "transaction"
 
-// Transaction mapped from table <transaction>
-type Transaction struct {
+// TransactionDAO mapped from table <transaction>
+type TransactionDAO struct {
 	TransactionID string          `gorm:"column:transaction_id;not null;default:gen_random_uuid()" json:"transaction_id"`
 	Nonce         int64           `gorm:"column:nonce;primaryKey" json:"nonce"`
 	FromAccountID int64           `gorm:"column:from_account_id;primaryKey" json:"from_account_id"`
@@ -24,7 +24,7 @@ type Transaction struct {
 	UpdatedAt     time.Time       `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
-// TableName Transaction's table name
-func (*Transaction) TableName() string {
-	return TableNameTransaction
+// TableName TransactionDAO's table name
+func (*TransactionDAO) TableName() string {
+	return TableNameTransactionDAO
 }

@@ -3,52 +3,34 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"points/configs"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
-func GetRootPath() (string, error) {
-	dir, err := os.Getwd()
+func GetEnvData(environment string) (string, error) {
+	fileName := fmt.Sprintf("%s.env", strings.ToLower(environment))
+	data, err := configs.EnvFS.ReadFile(fileName)
 	if err != nil {
-		return "", fmt.Errorf("failed to get current working directory: %w", err)
+		return "", fmt.Errorf("failed to read env file %s: %w", fileName, err)
 	}
-
-	for {
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir, nil
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return "", fmt.Errorf("go.mod not found, can't locate project root")
-		}
-		dir = parent
-	}
+	return string(data), nil
 }
 
-func GetEnvPath(environment ...string) (string, error) {
-	env := "example"
-	if len(environment) > 0 && environment[0] != "" {
-		env = environment[0]
-	}
-
-	rootPath, err := GetRootPath()
+func InitEmbeddedEnv(envData string) error {
+	envMap, err := godotenv.Parse(strings.NewReader(envData))
 	if err != nil {
-		return "", fmt.Errorf("failed to get root path while generating env path: %v", err)
+		return fmt.Errorf("failed to parse env data: %w", err)
 	}
 
-	envFilePath := filepath.Join(rootPath, "configs", fmt.Sprintf(".env.%s", env))
-
-	return envFilePath, nil
-}
-
-func InitEnv(envFilePaths ...string) error {
-	if err := godotenv.Overload(envFilePaths...); err != nil {
-		return fmt.Errorf("failed to load .env file(s): %w, file(s): %v", err, envFilePaths)
+	for key, value := range envMap {
+		if err := os.Setenv(key, value); err != nil {
+			return fmt.Errorf("failed to set env %s: %w", key, err)
+		}
 	}
-
 	return nil
 }
 
