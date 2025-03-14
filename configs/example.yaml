@@ -1,0 +1,23 @@
+postgres:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: pgadmin1234
+  POSTGRES_DB: points
+  POSTGRES_HOST: points-postgres
+  POSTGRES_PORT: 5432
+
+server:
+  SERVER_HOST: 0.0.0.0
+  SERVER_PORT: 8080
+
+redis:
+  REDIS_HOST: points-redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: redispassword
+  REDIS_DB: 0
+
+lock:
+  LOCK_TTL: 5
+
+gen:
+  GEN_DAO_PATH: "./internal/infrastructure/persistence/gorm/dao"
+  GEN_MODEL_OUT_PATH: "./internal/infrastructure/persistence/gorm/model"
