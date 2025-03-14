@@ -47,42 +47,42 @@ A distributed points system built in Go that manages user accounts, transactions
 
 ```plaintext
 ├─cmd
-│  ├─genmodel        # CLI tool to generate models
-│  └─points          # Main entry point for the application
-├─configs            # Configuration files (e.g., YAML, JSON, ENV)
-├─docker             # Docker-related files and configurations
-├─internal           # Core application logic (follows Clean Architecture)
-│  ├─adapter         # Adapters for external interfaces (e.g., HTTP, gRPC)
+│  ├─genmodel            # CLI tool to generate models
+│  └─points              # Main entry point for the application
+├─configs                # Configuration files (e.g., YAML, JSON, ENV)
+├─docker                 # Docker-related files and configurations
+├─internal               # Core application logic (follows Clean Architecture)
+│  ├─adapter             # Adapters for external interfaces (e.g., HTTP, gRPC)
 │  │  └─http
 │  │      ├─controller   # HTTP request handlers
 │  │      ├─dto          # Data Transfer Objects (DTOs) for API requests/responses
 │  │      ├─middleware   # Middleware for request processing
 │  │      └─router       # HTTP route definitions
-│  ├─domain          # Business domain layer (core logic)
-│  │  ├─command        # Application commands (CQRS pattern)
-│  │  ├─entity         # Business entities (domain models)
-│  │  ├─event          # Domain events
-│  │  ├─port           # Interfaces for dependency inversion (input/output ports)
-│  │  ├─repository     # Interfaces for data persistence
-│  │  └─valueobject    # Value objects (immutable domain concepts)
-│  ├─infrastructure   # Implementation details (external dependencies)
-│  │  ├─dbconnection   # Database connection handling
-│  │  ├─distributedlock # Distributed locking mechanisms
-│  │  └─persistence    # Data persistence layer (ORM, repositories)
+│  ├─domain              # Business domain layer (core logic)
+│  │  ├─command          # Application commands (CQRS pattern)
+│  │  ├─entity           # Business entities (domain models)
+│  │  ├─event            # Domain events
+│  │  ├─port             # Interfaces for dependency inversion (input/output ports)
+│  │  ├─repository       # Interfaces for data persistence
+│  │  └─valueobject      # Value objects (immutable domain concepts)
+│  ├─infrastructure      # Implementation details (external dependencies)
+│  │  ├─dbconnection     # Database connection handling
+│  │  ├─distributedlock  # Distributed locking mechanisms
+│  │  └─persistence      # Data persistence layer (ORM, repositories)
 │  │      ├─gorm
-│  │      │  ├─dao      # Data Access Objects (DAOs) using GORM
-│  │      │  └─model    # ORM models
-│  │      └─repository  # Repository implementations
-│  ├─shared           # Shared utilities and error handling
-│  │  ├─apperror      # Custom application errors
-│  │  ├─errcode       # Error codes
-│  │  └─mapper        # Object mappers and conversions
-│  └─usecase          # Application use cases (business logic)
-│      ├─locking       # Use cases related to distributed locking
-│      └─transaction   # Use cases related to transactions
-├─migrations         # Database migration files
+│  │      │  ├─dao       # Data Access Objects (DAOs) using GORM
+│  │      │  └─model     # ORM models
+│  │      └─repository   # Repository implementations
+│  ├─shared              # Shared utilities and error handling
+│  │  ├─apperror         # Custom application errors
+│  │  ├─errcode          # Error codes
+│  │  └─mapper           # Object mappers and conversions
+│  └─usecase             # Application use cases (business logic)
+│      ├─locking         # Use cases related to distributed locking
+│      └─transaction     # Use cases related to transactions
+├─migrations             # Database migration files
 └─test
-    └─mock           # Mock implementations for testing
+    └─mock               # Mock implementations for testing
 ```
 
 ## Prerequisites
