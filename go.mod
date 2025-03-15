@@ -8,15 +8,16 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/go-connections v0.5.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.35.0
+	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.27.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlite v1.5.0
@@ -55,7 +56,6 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -110,6 +110,7 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
+	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect

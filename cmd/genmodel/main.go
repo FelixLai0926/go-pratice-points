@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 
+	"points/internal/di"
 	"points/internal/domain/port"
-	"points/internal/infrastructure"
-	"points/internal/infrastructure/dbconnection"
 
+	"go.uber.org/fx"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 )
@@ -16,42 +17,44 @@ import (
 func main() {
 	env := flag.String("env", "example", "specify the environment to use (example, development, production, etc.)")
 	flag.Parse()
-	viper, err := infrastructure.NewViperImpl(*env)
-	if err != nil {
-		log.Fatalf("Error initializing viper: %v", err)
+
+	app := fx.New(
+		fx.Supply(*env),
+		di.SettingManagerModule,
+		di.DefaultsModule,
+		di.CopierModule,
+		di.ConfigModule,
+		di.LoggerModule,
+		di.DatabaseModule,
+		di.ApplicationModule,
+		di.HTTPModule,
+		fx.Invoke(runGenerateModels),
+	)
+
+	if err := app.Start(context.Background()); err != nil {
+		log.Fatal(err)
 	}
 
-	defaults := infrastructure.NewDefaultSetterImpl()
-	copier := infrastructure.NewCopierImpl()
-	config := infrastructure.NewConfigImpl(viper, defaults, copier)
-
-	dbConnection := dbconnection.NewPostgresConnection(config)
-
-	if err != nil {
-		log.Fatalf("Error initializing viper: %v", err)
+	if err := app.Stop(context.Background()); err != nil {
+		log.Fatal(err)
 	}
+}
 
-	db, err := dbConnection.InitPostgresDatabase()
-	if err != nil {
-		log.Fatalf("Error initializing database: %v", err)
-	}
-
-	defer dbConnection.MustClose(db)
-
+func runGenerateModels(config port.Config, db *gorm.DB) {
 	log.Println("Generating models...")
-	if err := generateModels(viper, db); err != nil {
+	if err := generateModels(config, db); err != nil {
 		log.Fatalf("Error generating models: %v", err)
 	}
 	log.Println("Model generation completed.")
 }
 
-func generateModels(v port.SettingsManager, gormdb *gorm.DB) error {
-	daoPath := v.GetString("gen.GEN_DAO_PATH")
+func generateModels(config port.Config, gormdb *gorm.DB) error {
+	daoPath := config.GetString("gen.GEN_DAO_PATH")
 	if daoPath == "" {
 		return fmt.Errorf("GEN_DAO_PATH is not set")
 	}
 
-	modelPath := v.GetString("gen.GEN_MODEL_OUT_PATH")
+	modelPath := config.GetString("gen.GEN_MODEL_OUT_PATH")
 	if modelPath == "" {
 		return fmt.Errorf("GEN_MODEL_OUT_PATH is not set")
 	}

@@ -18,6 +18,7 @@ import (
 var (
 	Q                = new(Query)
 	Account          *account
+	SchemaMigration  *schemaMigration
 	TradeRecord      *tradeRecord
 	TransactionEvent *transactionEvent
 )
@@ -25,6 +26,7 @@ var (
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	Account = &Q.Account
+	SchemaMigration = &Q.SchemaMigration
 	TradeRecord = &Q.TradeRecord
 	TransactionEvent = &Q.TransactionEvent
 }
@@ -33,6 +35,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:               db,
 		Account:          newAccount(db, opts...),
+		SchemaMigration:  newSchemaMigration(db, opts...),
 		TradeRecord:      newTradeRecord(db, opts...),
 		TransactionEvent: newTransactionEvent(db, opts...),
 	}
@@ -42,6 +45,7 @@ type Query struct {
 	db *gorm.DB
 
 	Account          account
+	SchemaMigration  schemaMigration
 	TradeRecord      tradeRecord
 	TransactionEvent transactionEvent
 }
@@ -52,6 +56,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:               db,
 		Account:          q.Account.clone(db),
+		SchemaMigration:  q.SchemaMigration.clone(db),
 		TradeRecord:      q.TradeRecord.clone(db),
 		TransactionEvent: q.TransactionEvent.clone(db),
 	}
@@ -69,6 +74,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:               db,
 		Account:          q.Account.replaceDB(db),
+		SchemaMigration:  q.SchemaMigration.replaceDB(db),
 		TradeRecord:      q.TradeRecord.replaceDB(db),
 		TransactionEvent: q.TransactionEvent.replaceDB(db),
 	}
@@ -76,6 +82,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 
 type queryCtx struct {
 	Account          IAccountDo
+	SchemaMigration  ISchemaMigrationDo
 	TradeRecord      ITradeRecordDo
 	TransactionEvent ITransactionEventDo
 }
@@ -83,6 +90,7 @@ type queryCtx struct {
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Account:          q.Account.WithContext(ctx),
+		SchemaMigration:  q.SchemaMigration.WithContext(ctx),
 		TradeRecord:      q.TradeRecord.WithContext(ctx),
 		TransactionEvent: q.TransactionEvent.WithContext(ctx),
 	}

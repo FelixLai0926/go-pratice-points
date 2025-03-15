@@ -3,12 +3,11 @@ package transaction
 import (
 	"context"
 	"errors"
-	"testing"
-	"time"
-
 	"points/internal/domain/entity"
 	"points/internal/domain/valueobject"
 	"points/test/mock"
+	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/shopspring/decimal"
