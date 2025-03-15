@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:latest
+    container_name: points-postgres
+    env_file:
+      - configs/example.yaml
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  migrate:
+      build:
+        context: .
+        dockerfile: ./docker/Dockerfile.migration
+      container_name: points-migrate
+      environment:
+        - APP_ENV=example
+      volumes:
+        - ./migrations:/migrations
+      depends_on:
+        db:
+          condition: service_healthy
+      restart: "no"
+
+  redis:
+    image: "redis:latest"
+    container_name: points-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: [ "redis-server", "--requirepass", "redispassword" ]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redispassword", "PING"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.app
+    container_name: points-app
+    env_file:
+      - configs/example.yaml
+    environment:
+      - APP_ENV=example
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  db-data:
+  redis-data:

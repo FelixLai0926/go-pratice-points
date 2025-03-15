@@ -1,0 +1,18 @@
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates curl bash netcat-openbsd
+
+RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64 -o /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq
+
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz && \
+    mv migrate /usr/local/bin/migrate
+
+WORKDIR /root/
+
+COPY ./docker/entrypoint.sh .
+COPY ./configs ./configs
+COPY ./migrations ./migrations
+EXPOSE 8080
+
+ENTRYPOINT ["./entrypoint.sh"]
