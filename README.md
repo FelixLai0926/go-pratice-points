@@ -24,58 +24,65 @@ A distributed points system built in Go that manages user accounts, transactions
 ## Features
 
 - **Configuration Management**  
-  Loads environment variables from `.env` files and parses them into strongly typed configuration structs. 
+  Loads environment variables from YAML configuration files `(configs/*.yaml)` and parses them into strongly typed configuration structs.
 
 - **Logging**  
   Structured logging using Uber's Zap, supporting both development and production modes.  
 
-- **Database Initialization**  
-  Supports in-memory SQLite for unit tests and PostgreSQL for production, with auto-migration of domain models.
+- **Database Initialization & Migrations**  
+  Supports PostgreSQL as the primary database, with automatic migration execution on startup using `migrate`.
 
-- **Distributed Locking**  
-  Implements distributed locking using Redis (via [redislock](https://github.com/bsm/redislock)) to ensure data consistency in concurrent scenarios.
+- **Transaction Management**  
+  Implements Unit of Work (UoW) to handle database transactions efficiently, ensuring consistency and rollback on failures.
 
-- **Testing**  
-  Comprehensive unit and integration tests using Testify, miniredis, and Testcontainers.  
-
+- **Distributed Locking**
+  Implements distributed locking using Redis (via redislock) to prevent race conditions and ensure data consistency.
+- **RESTful API**
+  Provides well-structured API endpoints with request validation and response DTOs.
+- **Testing**
+  Comprehensive unit and integration tests using Testify, miniredis, and Testcontainers for mocking dependencies.
 ---
 
 ## Project Structure
 
 ```plaintext
-D:.
-├─api                    # API layer code for handling HTTP requests
-│  ├─test                # Test code for the Ping API
-│  └─trade               # for handling trade operations (Transfer, Confirm, Cancel)
-│      └─mock            # Dummy implementations for the TCC module, used in unit tests
-├─cmd                    # Command-line tools (e.g., code generation, etc.)
-│  └─codegen             # Code generation tool
-├─configs                # Configuration files (e.g., .env files and other config files)
-├─docker                 # Docker configuration and deployment scripts
-│  └─sql                 # Docker configurations related to SQL databases
-├─errors                 # Error handling module that centrally defines error types and error wrapping logic
-├─pkg                    # Core business logic and modules
-│  ├─dao                 # Data Access Object (DAO) layer code
-│  ├─middleware          # Middleware implementations (e.g., logging, error handling, authentication, etc.)
-│  ├─models              # Domain models (ORM definitions, enums, event payloads, etc.)
-│  │  ├─enum             # Enumerated types definitions (e.g., errcode, tcc, etc.)
-│  │  │  ├─errcode       # Error code enumerations
-│  │  │  └─tcc           # TCC-related enumerations
-│  │  ├─eventpayload     # Event payload definitions
-│  │  ├─orm              # ORM model definitions (database entities)
-│  │  └─trade            # Trade module model definitions
-│  ├─module              # Module implementations (e.g., cache, config, database, distributed lock, logging, and test utilities)
-│  │  ├─cache            # Cache module (e.g., Redis, etc.)
-│  │  ├─config           # Configuration management module
-│  │  ├─database         # Database initialization and related utilities
-│  │  ├─distributedlock  # Distributed lock implementation (e.g., based on Redis)
-│  │  ├─logger           # Logging module (based on Zap)
-│  │  └─test             # Module-level test helper utilities
-│  └─router              # Routing layer code (e.g., API routes using Gin)
-├─repository             # Data repository layer, handling data persistence logic
-└─service                # Service layer code
-    └─tcc                # TCC-related business logic
-        └─mock           # Mock implementations or test cases for the TCC module
+├─cmd
+│  ├─genmodel            # CLI tool to generate models
+│  └─points              # Main entry point for the application
+├─configs                # Configuration files (e.g., YAML, JSON, ENV)
+├─docker                 # Docker-related files and configurations
+├─internal               # Core application logic (follows Clean Architecture)
+│  ├─adapter             # Adapters for external interfaces (e.g., HTTP, gRPC)
+│  │  └─http
+│  │      ├─controller   # HTTP request handlers
+│  │      ├─dto          # Data Transfer Objects (DTOs) for API requests/responses
+│  │      ├─middleware   # Middleware for request processing
+│  │      └─router       # HTTP route definitions
+│  ├─domain              # Business domain layer (core logic)
+│  │  ├─command          # Application commands (CQRS pattern)
+│  │  ├─entity           # Business entities (domain models)
+│  │  ├─event            # Domain events
+│  │  ├─port             # Interfaces for dependency inversion (input/output ports)
+│  │  ├─repository       # Interfaces for data persistence
+│  │  └─valueobject      # Value objects (immutable domain concepts)
+│  ├─infrastructure      # Implementation details (external dependencies)
+│  │  ├─dbconnection     # Database connection handling
+│  │  ├─distributedlock  # Distributed locking mechanisms
+│  │  └─persistence      # Data persistence layer (ORM, repositories)
+│  │      ├─gorm
+│  │      │  ├─dao       # Data Access Objects (DAOs) using GORM
+│  │      │  └─model     # ORM models
+│  │      └─repository   # Repository implementations
+│  ├─shared              # Shared utilities and error handling
+│  │  ├─apperror         # Custom application errors
+│  │  ├─errcode          # Error codes
+│  │  └─mapper           # Object mappers and conversions
+│  └─usecase             # Application use cases (business logic)
+│      ├─locking         # Use cases related to distributed locking
+│      └─transaction     # Use cases related to transactions
+├─migrations             # Database migration files
+└─test
+    └─mock               # Mock implementations for testing
 ```
 
 ## Prerequisites
@@ -125,14 +132,14 @@ go test -v ./...
 Note: Ensure Docker is running if integration tests are enabled.
 
 ## Configuration
-The project uses environment variables for configuration, with files named .env.<environment>.
+The project uses environment variables for configuration, with files named <environment>.yaml
 
 Place your configuration files in the configs/ directory. For example:
 
 ```plaintext
-example.env (default)
-production.env
-development.env
+example.yaml (default)
+production.yaml
+development.yaml
 ```
 The config module loads and parses these configuration files.
 

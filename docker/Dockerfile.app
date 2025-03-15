@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o points-system ./main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o points-system ./cmd/points/main.go
 
 FROM alpine:latest
 
@@ -16,6 +16,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY --from=builder /app/points-system .
+COPY --from=builder /app/configs ./configs
 
 EXPOSE 8080
 

@@ -2,12 +2,10 @@ version: "3.9"
 
 services:
   db:
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile.postgres
+    image: postgres:latest
     container_name: points-postgres
     env_file:
-      - configs/example.env
+      - configs/example.yaml
     ports:
       - "5432:5432"
     volumes:
@@ -17,6 +15,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  migrate:
+      build:
+        context: .
+        dockerfile: ./docker/Dockerfile.migration
+      container_name: points-migrate
+      environment:
+        - APP_ENV=example
+      volumes:
+        - ./migrations:/migrations
+      depends_on:
+        db:
+          condition: service_healthy
+      restart: "no"
 
   redis:
     image: "redis:latest"
@@ -38,7 +49,7 @@ services:
       dockerfile: ./docker/Dockerfile.app
     container_name: points-app
     env_file:
-      - configs/example.env
+      - configs/example.yaml
     environment:
       - APP_ENV=example
     ports:
@@ -48,7 +59,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
+      migrate:
+        condition: service_completed_successfully
 volumes:
   db-data:
   redis-data:
